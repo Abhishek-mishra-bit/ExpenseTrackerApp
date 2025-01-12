@@ -2,8 +2,11 @@ const path = require("path");
 const rootDir = require("../util/path");
 const userData = require("../models/userSignupData");
 
-exports.getSignUpPage = (req, res, next) => {
+exports.getSignUpPage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "signup.html"));
+};
+exports.getLoginPage = (req, res) => {
+  res.sendFile(path.join(rootDir, "views", "login.html"));
 };
 
 exports.postSignUpPage = (req, res, next) => {
@@ -18,6 +21,17 @@ exports.postSignUpPage = (req, res, next) => {
       .status(400)
       .json({ error: "Name, email, and password are required" });
   }
+  userData
+    .findOne({
+      where: {
+        email: email,
+      },
+    })
+    .then((user) => {
+      if (user) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+    });
 
   // Create a new user record in the database
   userData
@@ -34,5 +48,27 @@ exports.postSignUpPage = (req, res, next) => {
     .catch((error) => {
       console.error("Error creating user:", error);
       res.status(500).json({ error: "Error creating user" });
+    });
+};
+
+exports.postLoginPage = (req, res, next) => {
+  const { email, password } = req.body;
+
+  userData
+    .findOne({
+      where: {
+        email: email,
+        password: password,
+      },
+    })
+    .then((res) => {
+      if (res.email === email && res.password === password) {
+        res.send("Logged In");
+      } else if (res.password != password) {
+        res.send("Password is incorrect");
+      }
+    })
+    .catch((err) => {
+      res.status(403).json({ message: "User does not exist" });
     });
 };
