@@ -51,8 +51,9 @@ exports.postSignUpPage = (req, res, next) => {
     });
 };
 
-exports.postLoginPage = (req, res, next) => {
+exports.postLoginPage = (req, res) => {
   const { email, password } = req.body;
+  console.log("Received data:", email, password);
 
   userData
     .findOne({
@@ -61,14 +62,21 @@ exports.postLoginPage = (req, res, next) => {
         password: password,
       },
     })
-    .then((res) => {
-      if (res.email === email && res.password === password) {
-        res.send("Logged In");
-      } else if (res.password != password) {
-        res.send("Password is incorrect");
+    .then((user) => {
+      if (user.email === email && user.password === password) {
+        res.json({ success: true, message: "User logged in successfully" });
+      } else if (user && user.password !== password) {
+        res
+          .status(401)
+          .json({ success: false, message: "User is not authorized" });
+      } else {
+        res
+          .status(404)
+          .json({ success: false, message: "User does not exist" });
       }
     })
     .catch((err) => {
-      res.status(403).json({ message: "User does not exist" });
+      console.error("Error finding user:", err);
+      res.status(500).json({ success: false, error: "Internal server error" });
     });
 };

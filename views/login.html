@@ -60,23 +60,27 @@
 
       formE1.addEventListener("submit", (e) => {
         e.preventDefault();
+        const formData = new FormData(formE1);
+        const data = {};
+        formData.forEach((value, key) => {
+          data[key] = value;
+        });
 
         axios
-          .post(
-            "http://localhost:3000/user/login",
-            document.querySelector("#login-form"),
-            {
-              Headers: {
-                "content-type": "application/json",
-              },
-            }
-          )
+          .post("http://localhost:3000/user/login", data, {
+            Headers: {
+              "content-type": "application/json",
+            },
+          })
           .then((result) => {
-            alert(res.data);
+            console.log("User login Successfully");
+            alert("User login Successfully");
           })
           .catch((err) => {
-            alert(err.response.data.error);
+            console.log("User login failed", err);
+            alert("User login failed");
           });
+        formE1.reset();
       });
     </script>
   </body>
