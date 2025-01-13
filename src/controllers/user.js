@@ -1,4 +1,5 @@
 const path = require("path");
+const bcrypt = require("bcrypt");
 const rootDir = require("../util/path");
 const userData = require("../models/userSignupData");
 
@@ -34,21 +35,24 @@ exports.postSignUpPage = (req, res, next) => {
     });
 
   // Create a new user record in the database
-  userData
-    .create({
-      name,
-      email,
-      password,
-    })
-    .then((newUser) => {
-      res
-        .status(201)
-        .json({ message: "User created successfully", user: newUser });
-    })
-    .catch((error) => {
-      console.error("Error creating user:", error);
-      res.status(500).json({ error: "Error creating user" });
-    });
+  const saltRounds = 10;
+  bcrypt.hash(password, saltRounds).then((hash) => {
+    userData
+      .create({
+        name,
+        email,
+        password: hash, // Store the hashed password
+      })
+      .then((newUser) => {
+        res
+          .status(201)
+          .json({ message: "User created successfully", user: newUser });
+      })
+      .catch((error) => {
+        console.error("Error creating user:", error);
+        res.status(500).json({ error: "Error creating user" });
+      });
+  });
 };
 
 exports.postLoginPage = (req, res) => {
@@ -59,21 +63,32 @@ exports.postLoginPage = (req, res) => {
     .findOne({
       where: {
         email: email,
-        password: password,
       },
     })
     .then((user) => {
-      if (user.email === email && user.password === password) {
-        res.json({ success: true, message: "User logged in successfully" });
-      } else if (user && user.password !== password) {
-        res
-          .status(401)
-          .json({ success: false, message: "User is not authorized" });
-      } else {
-        res
+      if (!user) {
+        return res
           .status(404)
           .json({ success: false, message: "User does not exist" });
       }
+
+      bcrypt
+        .compare(password, user.password)
+        .then((passwordMatch) => {
+          if (passwordMatch) {
+            res.json({ success: true, message: "User logged in successfully" });
+          } else {
+            res
+              .status(401)
+              .json({ success: false, message: "Incorrect password" });
+          }
+        })
+        .catch((err) => {
+          console.error("Error comparing passwords:", err);
+          res
+            .status(500)
+            .json({ success: false, error: "Internal server error" });
+        });
     })
     .catch((err) => {
       console.error("Error finding user:", err);
