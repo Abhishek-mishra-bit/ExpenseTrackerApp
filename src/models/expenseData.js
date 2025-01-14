@@ -1,0 +1,26 @@
+const Sequelize = require("sequelize");
+const sequelize = require("../util/database");
+
+const expenseData = sequelize.define("expense", {
+  id: {
+    primaryKey: true,
+    allowNull: true,
+    autoIncrement: true,
+    type: Sequelize.INTEGER,
+    unique: true,
+  },
+  expenseAmount: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+  },
+  description: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  category: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+});
+
+module.exports = expenseData;

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+      crossorigin="anonymous" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h1 class="display-1" style="text-align: center">Expense tracker</h1>
+        </div>
+      </div>
+      <div class="row">
+        <form action="/user/expense" id="expense-form" method="POST">
+          <div class="mb-3">
+            <label for="Expense Amount" class="form-label"
+              >Expense Amount</label
+            >
+            <input
+              type="number"
+              name="amount"
+              placeholder="Enter your expense amount"
+              id="amount"
+              class="form-control"
+              required />
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input
+              type="text"
+              name="description"
+              placeholder="Enter your description"
+              id="description"
+              class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label for="choose category" class="form-label"
+              >Choose Category</label
+            >
+            <select name="category" id="category" class="form-select">
+              <option value="food">Food</option>
+              <option value="transport">Transport</option>
+              <option value="shopping">Shopping</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <input
+            type="submit"
+            class="btn btn-primary"
+            id="submit"
+            value="Add Expense" />
+        </form>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <h2 class="display-4" style="text-align: center">Expense List</h2>
+          <ul id="expense-list" class="list-group"></ul>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      const formE1 = document.getElementById("expense-form");
+
+      formE1.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(formE1);
+        const expense = {};
+        formData.forEach((value, key) => {
+          expense[key] = value;
+        });
+        axios
+          .post("http://localhost:3000/user/expenses", expense, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+          .then((result) => {
+            console.log("Expense added successfully");
+            alert("Expense added successfully");
+            loadItem(); // Reload items after adding a new expense
+          })
+          .catch((err) => {
+            console.error("Error in adding expense", err);
+            alert("Error adding expense");
+          });
+        formE1.reset();
+      });
+
+      function loadItem() {
+        fetch("http://localhost:3000/user/expenses/data")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+              throw new TypeError("Received non-JSON response");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const expenseList = document.getElementById("expense-list");
+            expenseList.innerHTML = "";
+            data.forEach((item) => {
+              const li = document.createElement("li");
+              li.className = "list-group-item";
+              li.innerHTML = `${item.expenseAmount} - ${item.description} - ${item.category}
+            <button onclick="deleteItem(${item.id})" class="btn btn-danger">Delete</button>`;
+              expenseList.appendChild(li);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching expenses:", error);
+            alert("Error fetching expenses");
+          });
+      }
+
+      function deleteItem(id) {
+        axios
+          .delete(`http://localhost:3000/user/expenses/${id}`)
+          .then((result) => {
+            console.log("Expense deleted successfully");
+            alert("Expense deleted successfully");
+            loadItem(); // Reload items after deleting an expense
+          })
+          .catch((err) => {
+            console.error("Error deleting expense", err);
+            alert("Error deleting expense");
+          });
+      }
+
+      loadItem();
+    </script>
+  </body>
+</html>
