@@ -7,6 +7,9 @@ exports.getExpensePage = (req, res) => {
 };
 
 exports.postExpensePage = (req, res) => {
+  console.log(req.body);
+  const userId = req.user.id;
+
   const { amount, description, category } = req.body;
   const expenseAmount = parseInt(amount);
 
@@ -16,6 +19,7 @@ exports.postExpensePage = (req, res) => {
       expenseAmount,
       description,
       category,
+      userId,
     })
     .then((expense) => {
       res.status(201).json({ message: "Data added successfully" });
@@ -26,25 +30,37 @@ exports.postExpensePage = (req, res) => {
     });
 };
 
-exports.getExpensesDataInJson = (req, res) => {
-  expenseData
-    .findAll()
-    .then((items) => res.status(200).json(items))
-    .catch((err) => {
-      console.error("Error fetching items:", err.message);
-      res
-        .status(500)
-        .json({ error: "Failed to fetch items", details: err.message });
-    });
+exports.getExpensesDataInJson = async (req, res) => {
+  const userId = req.user.id; // Get userId from the middleware
+
+  try {
+    const items = await expenseData.findAll({ where: { userId: userId } });
+    res.status(200).json(items);
+  } catch (err) {
+    console.error("Error fetching items:", err.message);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch items", details: err.message });
+  }
 };
 
-exports.deleteExpense = (req, res) => {
+exports.deleteExpense = async (req, res) => {
   const expenseId = parseInt(req.params.expenseId);
-  expenseData.findByPk(expenseId).then((expense) => {
+  const userId = req.user.id; // Get userId from the middleware
+
+  try {
+    const expense = await expenseData.findOne({
+      where: { id: expenseId, userId: userId },
+    });
+
     if (!expense) {
       return res.status(404).json({ error: "Expense not found" });
     }
-    expense.destroy();
+
+    await expense.destroy();
     res.status(200).json({ message: "Expense deleted successfully" });
-  });
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+    res.status(500).json({ error: "Error deleting expense" });
+  }
 };

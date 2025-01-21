@@ -84,61 +84,68 @@
           .post("http://localhost:3000/user/expenses", expense, {
             headers: {
               "Content-Type": "application/json",
+              Authorization: localStorage.getItem("token"), // Ensure "Bearer " is included
             },
           })
           .then((result) => {
             console.log("Expense added successfully");
             alert("Expense added successfully");
-            loadItem(); // Reload items after adding a new expense
+            loadItem();
           })
           .catch((err) => {
-            console.error("Error in adding expense", err);
+            console.error("Error adding expense", err);
             alert("Error adding expense");
           });
+
         formE1.reset();
       });
 
-      function loadItem() {
-        fetch("http://localhost:3000/user/expenses/data")
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
+      async function loadItem() {
+        try {
+          const responese = await axios.get(
+            "http://localhost:3000/user/expenses/data",
+            {
+              headers: {
+                Authorization: localStorage.getItem("token"), // Use localStorage token
+              },
             }
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-              throw new TypeError("Received non-JSON response");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            const expenseList = document.getElementById("expense-list");
-            expenseList.innerHTML = "";
-            data.forEach((item) => {
-              const li = document.createElement("li");
-              li.className = "list-group-item";
-              li.innerHTML = `${item.expenseAmount} - ${item.description} - ${item.category}
+          );
+
+          const data = responese.data;
+          console.log(data);
+
+          const expenseList = document.getElementById("expense-list");
+          expenseList.innerHTML = "";
+          data.forEach((item) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item";
+            li.innerHTML = `${item.expenseAmount} - ${item.description} - ${item.category}
             <button onclick="deleteItem(${item.id})" class="btn btn-danger">Delete</button>`;
-              expenseList.appendChild(li);
-            });
-          })
-          .catch((error) => {
-            console.error("Error fetching expenses:", error);
-            alert("Error fetching expenses");
+            expenseList.appendChild(li);
           });
+        } catch (error) {
+          console.error("Error loading expenses:", error.message);
+          alert("Error loading expenses");
+        }
       }
 
-      function deleteItem(id) {
-        axios
-          .delete(`http://localhost:3000/user/expenses/${id}`)
-          .then((result) => {
-            console.log("Expense deleted successfully");
-            alert("Expense deleted successfully");
-            loadItem(); // Reload items after deleting an expense
-          })
-          .catch((err) => {
-            console.error("Error deleting expense", err);
-            alert("Error deleting expense");
-          });
+      async function deleteItem(id) {
+        try {
+          const result = await axios.delete(
+            `http://localhost:3000/user/expenses/${id}`,
+            {
+              headers: {
+                Authorization: localStorage.getItem("token"), // Use localStorage token
+              },
+            }
+          );
+          console.log("Expense deleted successfully");
+          alert("Expense deleted successfully");
+          loadItem(); // Reload items after deleting an expense
+        } catch (err) {
+          console.error("Error deleting expense", err);
+          alert("Error deleting expense");
+        }
       }
 
       loadItem();

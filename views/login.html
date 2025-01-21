@@ -68,18 +68,27 @@
 
         axios
           .post("http://localhost:3000/user/login", data, {
-            Headers: {
-              "content-type": "application/json",
+            headers: {
+              // Correct header key
+              "Content-Type": "application/json",
             },
           })
           .then((result) => {
             console.log("User login Successfully");
             alert("User login Successfully");
+
+            // Store token in localStorage
+            localStorage.setItem("token", result.data.token);
+
+            // Redirect to expenses page
+            window.location.href =
+              "http://localhost:3000/user/expenses/" + result.data.token;
           })
           .catch((err) => {
             console.log("User login failed", err);
             alert("User login failed");
           });
+
         formE1.reset();
       });
     </script>

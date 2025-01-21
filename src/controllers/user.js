@@ -2,6 +2,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const rootDir = require("../util/path");
 const userData = require("../models/userSignupData");
+const jwt = require("jsonwebtoken");
 
 exports.getSignUpPage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "signup.html"));
@@ -10,88 +11,58 @@ exports.getLoginPage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "login.html"));
 };
 
-exports.postSignUpPage = (req, res, next) => {
+exports.postSignUpPage = async (req, res) => {
   const { name, email, password } = req.body;
-
-  // Log the received data for debugging
   console.log("Received data:", req.body);
+  try {
+    const user = await userData.findOne({ where: { email: email } });
+    if (user) {
+      return res.status(400).json({ error: "User already exists" });
+    }
 
-  // Check if all necessary fields are present
-  if (!name || !email || !password) {
-    return res
-      .status(400)
-      .json({ error: "Name, email, and password are required" });
-  }
-  userData
-    .findOne({
-      where: {
-        email: email,
-      },
-    })
-    .then((user) => {
-      if (user) {
-        return res.status(400).json({ error: "User already exists" });
-      }
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newUser = await userData.create({
+      name,
+      email,
+      password: hashedPassword,
     });
-
-  // Create a new user record in the database
-  const saltRounds = 10;
-  bcrypt.hash(password, saltRounds).then((hash) => {
-    userData
-      .create({
-        name,
-        email,
-        password: hash, // Store the hashed password
-      })
-      .then((newUser) => {
-        res
-          .status(201)
-          .json({ message: "User created successfully", user: newUser });
-      })
-      .catch((error) => {
-        console.error("Error creating user:", error);
-        res.status(500).json({ error: "Error creating user" });
-      });
-  });
+    return res.status(200).json({
+      success: true,
+      message: "User created successfully",
+    });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ error: "Error creating user" });
+  }
 };
 
-exports.postLoginPage = (req, res) => {
+exports.postLoginPage = async (req, res) => {
   const { email, password } = req.body;
   console.log("Received data:", email, password);
+  try {
+    const user = await userData.findOne({ where: { email: email } });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User does not exist" });
+    }
 
-  userData
-    .findOne({
-      where: {
-        email: email,
-      },
-    })
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User does not exist" });
-      }
-
-      bcrypt
-        .compare(password, user.password)
-        .then((passwordMatch) => {
-          if (passwordMatch) {
-            res.json({ success: true, message: "User logged in successfully" });
-          } else {
-            res
-              .status(401)
-              .json({ success: false, message: "Incorrect password" });
-          }
-        })
-        .catch((err) => {
-          console.error("Error comparing passwords:", err);
-          res
-            .status(500)
-            .json({ success: false, error: "Internal server error" });
-        });
-    })
-    .catch((err) => {
-      console.error("Error finding user:", err);
-      res.status(500).json({ success: false, error: "Internal server error" });
-    });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      // Generate JWT token
+      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY);
+      res.status(200).json({
+        message: "User login Successful",
+        success: true,
+        token: token,
+      });
+    } else {
+      res.status(401).json({ success: false, message: "Incorrect password" });
+    }
+  } catch (err) {
+    console.error("Error finding user:", err);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
 };
