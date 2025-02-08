@@ -1,5 +1,3 @@
-console.log("testing");
-
 async function handleSubmit(event) {
   event.preventDefault();
   try {
@@ -11,7 +9,8 @@ async function handleSubmit(event) {
     console.log(data);
 
     // Send POST request with form data as JSON
-    // await axios.post("http://localhost:3000/user/signup", data);
+    await axios.post("http://localhost:3000/user/signup", data);
+    alert("User sign in successfully");
 
     window.location.href = "http://localhost:3000/user/login";
   } catch (error) {

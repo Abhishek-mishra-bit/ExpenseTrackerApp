@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const rootDir = require("../util/path");
 const userData = require("../models/userSignupData");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 exports.getSignUpPage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "signup.html"));

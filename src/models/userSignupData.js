@@ -11,15 +11,25 @@ const userData = sequelize.define("userSignup", {
   },
   name: {
     type: Sequelize.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
   },
   email: {
     allowNull: false,
-
     type: Sequelize.STRING,
+    validate: {
+      isEmail: true,
+    },
   },
   password: {
     type: Sequelize.STRING,
     allowNull: false,
+  },
+  isPremiumUser: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
   },
 });
 
