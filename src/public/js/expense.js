@@ -4,34 +4,39 @@ const leaderboardButton = document.getElementById("leaderboard-button");
 const leaderboardSection = document.getElementById("leaderboard-section");
 const leaderboardBody = document.getElementById("leaderboard-list");
 
-let isVisible = false; // Initialize visibility toggle
 const token = localStorage.getItem("token");
 
 leaderboardButton.addEventListener("click", async (event) => {
   event.preventDefault();
 
   try {
-    // Fetch leaderboard data using GET request
-    const response = await axios.get(
-      "http://localhost:3000/premium/leaderboard",
-      {
-        headers: { Authorization: token },
-      }
-    );
+    if (leaderboardSection.style.display === "block") {
+      leaderboardSection.style.display = "none";
+      leaderboardButton.textContent = "Show leaderboard";
+    } else {
+      // Fetch leaderboard data using GET request
+      const response = await axios.get(
+        "http://localhost:3000/premium/leaderboard",
+        {
+          headers: { Authorization: token },
+        }
+      );
 
-    // Clear previous leaderboard data
-    leaderboardBody.innerHTML = "";
+      // Clear previous leaderboard data
+      leaderboardBody.innerHTML = "";
 
-    // Generate table rows dynamically
-    leaderboardBody.innerHTML = Object.entries(response.data)
-      .map(
-        ([name, amount]) => `<tr><td>${name}</td> - <td>${amount}</td></tr><br>`
-      )
-      .join("");
+      // Generate table rows dynamically
+      leaderboardBody.innerHTML = response.data
+        .map((user) => {
+          const total = user.total_cost ? user.total_cost : 0;
+          return `<tr><td>${user.name} - </td><td>${total}</td></tr><br/>`;
+        })
+        .join("");
 
-    // Toggle leaderboard visibility
-    leaderboardSection.style.display = isVisible ? "none" : "block";
-    isVisible = !isVisible;
+      // Toggle leaderboard visibility
+      leaderboardSection.style.display = "block";
+      leaderboardButton.textContent = "Hide leaderboard";
+    }
   } catch (err) {
     console.error("Error fetching leaderboard:", err);
     alert("Error fetching leaderboard");
@@ -50,8 +55,8 @@ async function hideOrNot() {
     if (response.data.isPremiumUser) {
       rzpButton.style.display = "none";
       const premiumText = document.getElementById("premiumText");
-      premiumText.textContent = "You are a Premium User";
-      premiumText.style.fontWeight = "bold";
+      premiumText.textContent = "Thanks for being a premium user!";
+      premiumText.style.fontWeight = "bold !important";
     }
   } catch (err) {
     console.error("Error checking premium status:", err);
