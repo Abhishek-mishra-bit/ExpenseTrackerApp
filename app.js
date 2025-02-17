@@ -7,6 +7,7 @@ const path = require("path");
 const userRoutes = require("./src/routes/user");
 const expenseRoutes = require("./src/routes/expense");
 const purchaseRoutes = require("./src/routes/purchase");
+const premiumRoutes = require("./src/routes/premium");
 
 const sequelize = require("./src/util/database");
 
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, "src", "public")));
 app.use("/user", userRoutes);
 app.use("/userexpense", expenseRoutes);
 app.use("/purchase", purchaseRoutes);
+app.use("/premium", premiumRoutes);
 
 User.hasMany(Expense, { foreignKey: "userId", onDelete: "CASCADE" });
 Expense.belongsTo(User, { foreignKey: "userId" });

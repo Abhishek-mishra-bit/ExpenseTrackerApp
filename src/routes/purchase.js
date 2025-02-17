@@ -16,4 +16,6 @@ router.post(
   purchaseController.updateTransactionStatus
 );
 
+router.get("/ispremium", authenticate, purchaseController.isPremium);
+
 module.exports = router;

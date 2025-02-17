@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const rootDir = require("../util/path");
 const userData = require("../models/userSignupData");
 const jwt = require("jsonwebtoken");
+const { isPremium } = require("./purchase");
 require("dotenv").config();
 
 exports.getSignUpPage = (req, res) => {
@@ -67,3 +68,13 @@ exports.postLoginPage = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+
+// exports.getUserStatus = async (req, res) => {
+//   try {
+//     const user = await req.user;
+//     res.status(200).json({ isPremiumUser: user.isPremiumUser });
+//   } catch (err) {
+//     console.log("error checking user status: " + err);
+//     res.status(500).json({ "internale server error": err });
+//   }
+// };

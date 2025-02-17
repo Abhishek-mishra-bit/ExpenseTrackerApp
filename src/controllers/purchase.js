@@ -1,6 +1,7 @@
 const Razorpay = require("razorpay");
 const Order = require("../models/order");
 require("dotenv").config();
+const user = require("../models/userSignupData");
 
 exports.purchasePremium = async (req, res) => {
   const instance = new Razorpay({
@@ -36,26 +37,49 @@ exports.updateTransactionStatus = async (req, res) => {
 
   if (!success) {
     try {
-      await Order.update({ status: "failed" }, { where: { orderId } });
-      res.status(200).json({ message: "Transaction failed" });
+      await Order.update(
+        { status: "failed", payment_id },
+        { where: { orderId } }
+      );
+      return res.status(200).json({ message: "Transaction failed" });
     } catch (err) {
       console.error("Error updating transaction status:", err);
-      res
+      return res
         .status(500)
         .json({ message: "Error updating transaction status", error: err });
     }
   } else {
     try {
+      // Update order status
       await Order.update(
         { status: "success", payment_id },
         { where: { orderId } }
       );
-      res.status(200).json({ message: "Transaction successful" });
+
+      // ✅ Update the user to set isPremiumUser = true
+      await req.user.update({ isPremiumUser: true });
+
+      return res
+        .status(200)
+        .json({ message: "Transaction successful", isPremiumUser: true });
     } catch (err) {
       console.error("Error updating transaction status:", err);
-      res
+      return res
         .status(500)
         .json({ message: "Error updating transaction status", error: err });
     }
+  }
+};
+
+exports.isPremium = async (req, res) => {
+  try {
+    const user = await req.user;
+    console.log("isPremiumUser from DB:", user.isPremiumUser);
+    return res.status(200).json({ isPremiumUser: user.isPremiumUser });
+  } catch (err) {
+    console.error("Error checking premium status:", err);
+    return res
+      .status(500)
+      .json({ message: "Error checking premium status", error: err });
   }
 };

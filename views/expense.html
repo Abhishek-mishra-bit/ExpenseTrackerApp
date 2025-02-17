@@ -12,67 +12,58 @@
   </head>
   <body>
     <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <h1 class="display-1" style="text-align: center">Expense tracker</h1>
-        </div>
+      <h1 class="text-center">Expense Tracker</h1>
+
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-info" id="rzp-button">Buy Premium</button>
+        <p class="btn" id="premiumText"></p>
+        <button class="btn btn-info" id="leaderboard-button">
+          Show LeaderBoard
+        </button>
       </div>
-      <div class="row">
-        <form action="/user/expense" id="expense-form" method="POST">
-          <div class="mb-3">
-            <label for="Expense Amount" class="form-label"
-              >Expense Amount</label
-            >
-            <input
-              type="number"
-              name="amount"
-              placeholder="Enter your expense amount"
-              id="amount"
-              class="form-control"
-              required />
-          </div>
-          <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <input
-              type="text"
-              name="description"
-              placeholder="Enter your description"
-              id="description"
-              class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="choose category" class="form-label"
-              >Choose Category</label
-            >
-            <select name="category" id="category" class="form-select">
-              <option value="food">Food</option>
-              <option value="transport">Transport</option>
-              <option value="shopping">Shopping</option>
-              <option value="others">Others</option>
-            </select>
-          </div>
-          <input
-            type="submit"
-            class="btn btn-primary mb-3"
-            id="submit"
-            value="Add Expense" />
-          <br />
-          <button
-            type="button"
-            class="btn btn-primary"
-            id="rzp-button"
-            value="Buy Premium">
-            Buy Premium
-          </button>
-        </form>
-      </div>
-      <div class="row">
-        <div class="col-12">
-          <h2 class="display-4" style="text-align: center">Expense List</h2>
-          <ul id="expense-list" class="list-group"></ul>
-        </div>
+
+      <form
+        action="/userexpense/expenses"
+        id="expense-form"
+        method="POST"
+        class="mt-4">
+        <label for="amount">Expense Amount</label>
+        <input
+          type="number"
+          name="amount"
+          placeholder="Enter amount"
+          id="amount"
+          class="form-control mb-3"
+          required />
+
+        <label for="description">Description</label>
+        <input
+          type="text"
+          name="description"
+          placeholder="Enter description"
+          id="description"
+          class="form-control mb-3" />
+
+        <label for="category">Choose Category</label>
+        <select name="category" id="category" class="form-select mb-3">
+          <option value="food">Food</option>
+          <option value="transport">Transport</option>
+          <option value="shopping">Shopping</option>
+          <option value="others">Others</option>
+        </select>
+
+        <button type="submit" class="btn btn-info w-100">Submit</button>
+      </form>
+
+      <h2 class="text-center mt-4">Expense List</h2>
+      <ul id="expense-list" class="list-group"></ul>
+
+      <div id="leaderboard-section" style="display: none">
+        <h3 class="text-center">LeaderBoard</h3>
+        <ul id="leaderboard-list" class="list-group"></ul>
       </div>
     </div>
+
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
