@@ -1,6 +1,7 @@
 const path = require("path");
 const expenseData = require("../models/expenseData");
 const rootDir = require("../util/path");
+const User = require("../models/user");
 
 exports.getExpensePage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "expense.html"));
@@ -9,25 +10,29 @@ exports.getExpensePage = (req, res) => {
 exports.postExpensePage = (req, res) => {
   console.log(req.body);
   const userId = req.user.id;
+  try {
+    const { amount, description, category } = req.body;
+    const expenseAmount = parseInt(amount);
 
-  const { amount, description, category } = req.body;
-  const expenseAmount = parseInt(amount);
+    // add all the expense amount for same userId to store it in the user table
+    User.increment("totalExpense", {
+      by: expenseAmount,
+      where: { id: userId },
+    });
 
-  console.log("received expense data:", amount, description, category);
-  expenseData
-    .create({
+    console.log("received expense data:", amount, description, category);
+    expenseData.create({
       expenseAmount,
       description,
       category,
       userId,
-    })
-    .then((expense) => {
-      res.status(201).json({ message: "Data added successfully" });
-    })
-    .catch((error) => {
-      console.error("Error adding data:", error);
-      res.status(500).json({ error: "Error adding data" });
     });
+
+    res.status(201).json({ message: "Data added successfully" });
+  } catch (error) {
+    console.error("Error adding data:", error);
+    res.status(500).json({ error: "Error adding data" });
+  }
 };
 
 exports.getExpensesDataInJson = async (req, res) => {

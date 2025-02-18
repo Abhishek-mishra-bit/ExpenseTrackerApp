@@ -1,7 +1,7 @@
 const path = require("path");
 const bcrypt = require("bcrypt");
 const rootDir = require("../util/path");
-const userData = require("../models/userSignupData");
+const userData = require("../models/user");
 const jwt = require("jsonwebtoken");
 const { isPremium } = require("./purchase");
 require("dotenv").config();

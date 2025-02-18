@@ -11,7 +11,7 @@ const premiumRoutes = require("./src/routes/premium");
 
 const sequelize = require("./src/util/database");
 
-const User = require("./src/models/userSignupData");
+const User = require("./src/models/user");
 const Expense = require("./src/models/expenseData");
 const Order = require("./src/models/order");
 
@@ -37,7 +37,7 @@ User.hasMany(Order);
 Order.belongsTo(User);
 
 sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then((res) => {
     app.listen(3000, () => {
       console.log("Server running on port 3000");
