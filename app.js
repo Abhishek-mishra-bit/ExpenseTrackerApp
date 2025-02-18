@@ -37,7 +37,7 @@ User.hasMany(Order);
 Order.belongsTo(User);
 
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then((res) => {
     app.listen(3000, () => {
       console.log("Server running on port 3000");
