@@ -1,7 +1,3 @@
-// purchase.js
-const rzpButton = document.getElementById("rzp-button");
-const token = localStorage.getItem("token");
-
 rzpButton.addEventListener("click", async () => {
   try {
     const response = await axios.post(
@@ -34,6 +30,7 @@ rzpButton.addEventListener("click", async () => {
           if (updateResponse.data.isPremiumUser) {
             alert("You are now a Premium user");
             // Optionally call a function to update UI, e.g., hide the premium button.
+            hideOrNot(); // Refresh UI
           }
         } catch (error) {
           console.error("Error updating transaction:", error);

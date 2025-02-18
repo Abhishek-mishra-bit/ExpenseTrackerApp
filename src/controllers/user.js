@@ -4,6 +4,7 @@ const rootDir = require("../util/path");
 const userData = require("../models/user");
 const jwt = require("jsonwebtoken");
 const { isPremium } = require("./purchase");
+const sequelize = require("../util/database");
 require("dotenv").config();
 
 exports.getSignUpPage = (req, res) => {
@@ -16,26 +17,36 @@ exports.getLoginPage = (req, res) => {
 exports.postSignUpPage = async (req, res) => {
   const { name, email, password } = req.body;
   console.log("Received data:", req.body);
+  const t = await sequelize.transaction();
   try {
-    const user = await userData.findOne({ where: { email: email } });
+    const user = await userData.findOne({
+      where: { email: email },
+      transaction: t,
+    });
     if (user) {
+      await t.rollback();
       return res.status(400).json({ error: "User already exists" });
     }
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = await userData.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const newUser = await userData.create(
+      {
+        name,
+        email,
+        password: hashedPassword,
+      },
+      { transaction: t }
+    );
+    await t.commit();
     return res.status(200).json({
       success: true,
       message: "User created successfully",
     });
   } catch (error) {
     console.error("Error creating user:", error);
+    await t.rollback();
     res.status(500).json({ error: "Error creating user" });
   }
 };
@@ -43,8 +54,10 @@ exports.postSignUpPage = async (req, res) => {
 exports.postLoginPage = async (req, res) => {
   const { email, password } = req.body;
   console.log("Received data:", email, password);
+
   try {
     const user = await userData.findOne({ where: { email: email } });
+
     if (!user) {
       return res
         .status(404)
@@ -52,29 +65,23 @@ exports.postLoginPage = async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (isPasswordValid) {
-      // Generate JWT token
-      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY);
-      res.status(200).json({
-        message: "User login Successful",
-        success: true,
-        token: token,
-      });
-    } else {
-      res.status(401).json({ success: false, message: "Incorrect password" });
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Incorrect password" });
     }
+
+    const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY);
+
+    return res.status(200).json({
+      message: "User login successful",
+      success: true,
+      token: token,
+    });
   } catch (err) {
-    console.error("Error finding user:", err);
-    res.status(500).json({ success: false, error: "Internal server error" });
+    console.error("Error during login:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
   }
 };
-
-// exports.getUserStatus = async (req, res) => {
-//   try {
-//     const user = await req.user;
-//     res.status(200).json({ isPremiumUser: user.isPremiumUser });
-//   } catch (err) {
-//     console.log("error checking user status: " + err);
-//     res.status(500).json({ "internale server error": err });
-//   }
-// };

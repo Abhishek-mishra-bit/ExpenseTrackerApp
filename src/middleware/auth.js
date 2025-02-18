@@ -12,7 +12,6 @@ exports.authenticate = async (req, res, next) => {
     }
 
     const token = authHeader;
-    console.log("Token:", token);
 
     const decoded = jwt.verify(token || params, process.env.SECRET_KEY);
 
