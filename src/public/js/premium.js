@@ -26,9 +26,9 @@ leaderboardButton.addEventListener("click", async (event) => {
         .map((user) => {
           const total = user.total_cost ? user.total_cost : 0;
           return `<tr>
-                  <td>${user.name}</td>
-                  <td>${total}</td>
-                </tr>`;
+                   * Name: <td>${user.name}</td> - 
+                  Total Expense: <td>${total}</td>
+                </tr><br/>`;
         })
         .join("");
       leaderboardSection.style.display = "block";

@@ -1,4 +1,5 @@
 const formE1 = document.getElementById("login-form");
+const forgot_btn = document.getElementById("forgot-password-btn");
 
 formE1.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -31,4 +32,8 @@ formE1.addEventListener("submit", (e) => {
     });
 
   formE1.reset();
+});
+
+forgot_btn.addEventListener("click", () => {
+  window.location.href = "http://localhost:3000/forgot/emailform";
 });

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forgot password</title>
+  </head>
+  <body>
+    <h1>Forgot Password</h1>
+    <form onsubmit="handleFormSubmit(event)" method="POST">
+      <label for="email">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Enter your email to reset your password"
+        required />
+      <button type="submit" id="submit-btn">Submit</button>
+    </form>
+    <p>Back to <a href="http://localhost:3000/user/login">Login</a></p>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-Q5x8t/Sksg8zW1KpzFro0y27bPVCmYlP13Q9d9m2vXbk6vG1jR0Jp2mWj6Pb1R96"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </body>
+  <script src="/js/forgot-password.js"></script>
+</html>
