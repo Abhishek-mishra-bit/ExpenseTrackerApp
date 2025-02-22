@@ -1,4 +1,4 @@
-const submit_btn = document.getElementById("submit-btn");
+const message = document.getElementById("message");
 
 async function handleFormSubmit(event) {
   event.preventDefault();
@@ -7,7 +7,8 @@ async function handleFormSubmit(event) {
     axios.post("http://localhost:3000/forgot/password", { email });
 
     alert("Password reset link sent to your email");
-    window.location.href = "http://localhost:3000/user/login";
+    message.innerHTML =
+      "Password reset link sent to your email<br /> you can reset your password form there";
   } catch (err) {
     console.error("Error sending password reset link", err);
     alert("Error sending password reset link");
