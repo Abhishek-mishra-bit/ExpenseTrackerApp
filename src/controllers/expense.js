@@ -3,13 +3,16 @@ const expenseData = require("../models/expenseData");
 const rootDir = require("../util/path");
 const User = require("../models/user");
 const sequelize = require("../util/database");
+const { Op } = require("sequelize");
+const moment = require("moment");
 
 exports.getExpensePage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "expense.html"));
 };
 
-exports.postExpensePage = async (req, res) => {
-  console.log(req.body);
+exports.postExpenseData = async (req, res) => {
+  console.log(req.user);
+
   const userId = req.user.id;
   const t = await sequelize.transaction();
   try {
@@ -90,5 +93,58 @@ exports.deleteExpense = async (req, res) => {
     console.error("Error deleting expense:", error);
     await t.rollback();
     return res.status(500).json({ error: "Error deleting expense" });
+  }
+};
+
+exports.getExpensesDataPaginated = async (req, res) => {
+  const userId = req.user.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const offset = (page - 1) * limit;
+  const timeFilter = req.query.filter || "all";
+  console.log("timeFilter:", timeFilter);
+
+  //build the where clause with filtering on createdAt
+  let whereClause = { userId: userId };
+
+  if (timeFilter !== "all") {
+    if (timeFilter === "day") {
+      // Get start of day using moment
+      const startOfDay = moment().startOf("day").toDate();
+      whereClause.createdAt = { [Op.gte]: startOfDay };
+    } else if (timeFilter === "week") {
+      // Get start of week (default week starts on Sunday; change locale if needed)
+      const startOfWeek = moment().startOf("week").toDate();
+      whereClause.createdAt = { [Op.gte]: startOfWeek };
+    } else if (timeFilter === "month") {
+      const startOfMonth = moment().startOf("month").toDate();
+      whereClause.createdAt = { [Op.gte]: startOfMonth };
+    } else if (timeFilter === "year") {
+      const startOfYear = moment().startOf("year").toDate();
+      whereClause.createdAt = { [Op.gte]: startOfYear };
+    }
+  }
+  if (req.query.from && req.query.to) {
+    whereClause.createdAt = {
+      [Op.between]: [new Date(req.query.from), new Date(req.query.to)],
+    };
+  }
+
+  try {
+    const { count, rows } = await expenseData.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({
+      expenses: rows,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Error fetching paginated expenses:", error);
+    res.status(500).json({ error: "Error fetching paginated expenses" });
   }
 };

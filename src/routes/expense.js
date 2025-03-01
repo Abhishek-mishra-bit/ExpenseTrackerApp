@@ -8,13 +8,19 @@ router.get(
   authenticate,
   expenseController.getExpensesDataInJson
 );
-router.post("/expenses", authenticate, expenseController.postExpensePage);
+router.post("/expensesData", authenticate, expenseController.postExpenseData);
 router.get("/expenses/", expenseController.getExpensePage);
 
 router.delete(
   "/expenses/:expenseId",
   authenticate,
   expenseController.deleteExpense
+);
+
+router.get(
+  "/expenses/paginated",
+  authenticate,
+  expenseController.getExpensesDataPaginated
 );
 
 module.exports = router;

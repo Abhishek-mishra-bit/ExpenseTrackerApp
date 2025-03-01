@@ -1,8 +1,7 @@
 const Razorpay = require("razorpay");
 const Order = require("../models/order");
 require("dotenv").config();
-const User = require("../models/user");
-const sequelize = require("../util/database");
+const user = require("../models/user");
 
 exports.purchasePremium = async (req, res) => {
   const instance = new Razorpay({
@@ -14,89 +13,68 @@ exports.purchasePremium = async (req, res) => {
     amount: 2500,
     currency: "INR",
   };
-
-  //Correct transaction initialization
-  const t = await sequelize.transaction();
-
   try {
+    //creting order with razorpay
     const order = await instance.orders.create(options);
+    //creating order in the database
+    await req.user.createOrder({
+      orderId: order.id,
+      status: "pending",
+    });
 
-    if (!order || !order.id) {
-      throw new Error("Failed to create order with Razorpay");
-    }
-
-    //Create order in the database with Sequelize
-    await req.user.createOrder(
-      {
-        orderId: order.id,
-        status: "pending",
-      },
-      { transaction: t }
-    );
-
-    await t.commit();
-
+    //sending response with razorpay keyid and order id
     res
       .status(201)
       .json({ orderId: order.id, key_id: process.env.RAZORPAY_KEYID });
   } catch (err) {
     console.error("Error creating Razorpay order:", err);
-    await t.rollback();
-    res
-      .status(500)
-      .json({ message: "Error creating order", error: err.message });
+    res.status(500).json({ message: "Error creating order", error: err });
   }
 };
 
 exports.updateTransactionStatus = async (req, res) => {
   const { success, orderId, payment_id } = req.body;
-  const t = await sequelize.transaction();
 
-  try {
-    if (!success) {
-      // Update order status to "failed"
+  if (!success) {
+    try {
       await Order.update(
         { status: "failed", payment_id },
-        { where: { orderId }, transaction: t }
+        { where: { orderId } }
+      );
+      return res.status(200).json({ message: "Transaction failed" });
+    } catch (err) {
+      console.error("Error updating transaction status:", err);
+      return res
+        .status(500)
+        .json({ message: "Error updating transaction status", error: err });
+    }
+  } else {
+    try {
+      // Update order status
+      await Order.update(
+        { status: "success", payment_id },
+        { where: { orderId } }
       );
 
-      await t.commit();
-      return res.status(200).json({ message: "Transaction failed" });
+      // ✅ Update the user to set isPremiumUser = true
+      await req.user.update({ isPremiumUser: true });
+
+      return res
+        .status(200)
+        .json({ message: "Transaction successful", isPremiumUser: true });
+    } catch (err) {
+      console.error("Error updating transaction status:", err);
+      return res
+        .status(500)
+        .json({ message: "Error updating transaction status", error: err });
     }
-
-    // Update order status to successful
-    await Order.update(
-      { status: "success", payment_id },
-      { where: { orderId }, transaction: t }
-    );
-
-    // Fetch user from the database
-    const user = await User.findByPk(req.user.id, { transaction: t });
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Update user to set isPremiumUser = true
-    await user.update({ isPremiumUser: true }, { transaction: t });
-
-    await t.commit();
-
-    return res
-      .status(200)
-      .json({ message: "Transaction successful", isPremiumUser: true });
-  } catch (err) {
-    console.error("Error updating transaction status:", err);
-    await t.rollback();
-    return res
-      .status(500)
-      .json({ message: "Error updating transaction status", error: err });
   }
 };
 
 exports.isPremium = async (req, res) => {
   try {
-    const user = await req.user;
-
+    const user = req.user;
+    console.log("isPremiumUser from DB:", user.isPremiumUser);
     return res.status(200).json({ isPremiumUser: user.isPremiumUser });
   } catch (err) {
     console.error("Error checking premium status:", err);
