@@ -45,6 +45,14 @@ function filterReportChanged() {
     loadFullReport(1, filterValue);
   }
 }
+function setExpensesLimit() {
+  const limitValue = document.getElementById("expensesLimit").value;
+  // Save the user's preference in localStorage
+  localStorage.setItem("expensesLimit", limitValue);
+  // Optionally, reload the report to reflect the new limit
+  const currentFilter = document.getElementById("timeFilter").value || "all";
+  loadFullReport(1, currentFilter);
+}
 
 // Update pagination controls
 function updateReportPaginationControls(currentPage, totalPages, filter) {
@@ -75,7 +83,10 @@ function updateReportPaginationControls(currentPage, totalPages, filter) {
   }
 }
 async function loadFullReport(page = 1, filter = "all") {
-  let url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&filter=${filter}`;
+  const limit = localStorage.getItem("expensesLimit")
+    ? parseInt(localStorage.getItem("expensesLimit"))
+    : 5;
+  let url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&row=${limit}&filter=${filter}`;
   if (filter === "custom") {
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
@@ -86,7 +97,7 @@ async function loadFullReport(page = 1, filter = "all") {
       return;
     }
 
-    url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&from=${fromDate}&to=${toDate}`;
+    url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&row=${limit}&from=${fromDate}&to=${toDate}`;
   }
   try {
     const response = await axios.get(url, {

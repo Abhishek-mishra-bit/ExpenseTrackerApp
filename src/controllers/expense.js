@@ -99,7 +99,7 @@ exports.deleteExpense = async (req, res) => {
 exports.getExpensesDataPaginated = async (req, res) => {
   const userId = req.user.id;
   const page = parseInt(req.query.page) || 1;
-  const limit = 5;
+  const limit = parseInt(req.query.row) || 5;
   const offset = (page - 1) * limit;
   const timeFilter = req.query.filter || "all";
   console.log("timeFilter:", timeFilter);

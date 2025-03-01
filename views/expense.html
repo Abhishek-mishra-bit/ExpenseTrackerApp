@@ -98,6 +98,15 @@
                   <option value="year">This Year</option>
                   <option value="custom">Custom Date Range</option>
                 </select>
+                <div class="mb-3">
+                  <label for="expensesLimit">Expenses Per Page:</label>
+                  <select id="expensesLimit" onchange="setExpensesLimit()">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+                </div>
               </div>
               <!-- Custom Date Range Inputs (Initially Hidden) -->
               <div id="customDateFilter" style="display: none">
@@ -105,7 +114,7 @@
                 <input type="date" id="fromDate" />
                 <label for="toDate">To: </label>
                 <input type="date" id="toDate" />
-                <button onclick="loadFullReport()">Apply</button>
+                <button onclick="loadFullReport(1, 'custom')">Apply</button>
               </div>
               <!-- Report Table -->
               <table class="table table-bordered table-light">
