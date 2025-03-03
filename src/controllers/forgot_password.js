@@ -17,9 +17,8 @@ exports.getForgotPasswordPage = (req, res) => {
 
 exports.sendForgotPasswordEmail = async (req, res) => {
   const { email } = req.body;
-  console.log("Received data:", email);
+
   const user = await User.findOne({ where: { email } });
-  // console.log("User found:", user.email);
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });
@@ -49,7 +48,7 @@ exports.sendForgotPasswordEmail = async (req, res) => {
       subject: "Reset Password",
       htmlContent: `<p>Click <a href="${resetPasswordLink}">here</a> to reset your password.</p>`,
     });
-    console.log("Email sent successfully");
+
     res.status(200).json({ message: "Password reset link sent to your email" });
   } catch (e) {
     console.error("Error sending email", e);
@@ -65,7 +64,6 @@ exports.updatePasswordForm = (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { newPassword, requestId } = req.body;
 
-  console.log("Request ID is:", requestId);
   try {
     const request = await ForgotPasswordRequest.findByPk(requestId);
 

@@ -7,7 +7,6 @@ async function handleFormSubmit(event) {
     const response = await axios.post("http://localhost:3000/forgot/password", {
       email,
     });
-    console.log(response);
 
     alert("Password reset link sent to your email");
     message.innerHTML =

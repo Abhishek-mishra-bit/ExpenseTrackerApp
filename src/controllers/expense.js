@@ -11,8 +11,6 @@ exports.getExpensePage = (req, res) => {
 };
 
 exports.postExpenseData = async (req, res) => {
-  console.log(req.user);
-
   const userId = req.user.id;
   const t = await sequelize.transaction();
   try {
@@ -26,7 +24,6 @@ exports.postExpenseData = async (req, res) => {
       transaction: t,
     });
 
-    console.log("received expense data:", amount, description, category);
     await expenseData.create(
       {
         expenseAmount,
@@ -102,7 +99,6 @@ exports.getExpensesDataPaginated = async (req, res) => {
   const limit = parseInt(req.query.row) || 5;
   const offset = (page - 1) * limit;
   const timeFilter = req.query.filter || "all";
-  console.log("timeFilter:", timeFilter);
 
   //build the where clause with filtering on createdAt
   let whereClause = { userId: userId };

@@ -74,7 +74,7 @@ exports.updateTransactionStatus = async (req, res) => {
 exports.isPremium = async (req, res) => {
   try {
     const user = req.user;
-    console.log("isPremiumUser from DB:", user.isPremiumUser);
+
     return res.status(200).json({ isPremiumUser: user.isPremiumUser });
   } catch (err) {
     console.error("Error checking premium status:", err);

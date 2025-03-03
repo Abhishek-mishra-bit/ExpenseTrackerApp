@@ -16,7 +16,7 @@ exports.getLoginPage = (req, res) => {
 
 exports.postSignUpPage = async (req, res) => {
   const { name, email, password } = req.body;
-  console.log("Received data:", req.body);
+
   const t = await sequelize.transaction();
   try {
     const user = await userData.findOne({
@@ -53,7 +53,6 @@ exports.postSignUpPage = async (req, res) => {
 
 exports.postLoginPage = async (req, res) => {
   const { email, password } = req.body;
-  console.log("Received data:", email, password);
 
   try {
     const user = await userData.findOne({ where: { email: email } });

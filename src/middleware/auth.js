@@ -4,7 +4,6 @@ const User = require("../models/user");
 exports.authenticate = async (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
-    console.log(authHeader);
 
     if (!authHeader) {
       return res

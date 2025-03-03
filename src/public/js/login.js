@@ -17,7 +17,6 @@ formE1.addEventListener("submit", (e) => {
       },
     })
     .then((result) => {
-      console.log("User login Successfully");
       alert("User login Successfully");
 
       // Store token in localStorage

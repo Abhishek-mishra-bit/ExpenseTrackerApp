@@ -16,9 +16,7 @@ async function handleFormSubmit(event) {
       newPassword: password,
       headers: { "Content-Type": "application/json" },
     });
-    console.log(response.data);
 
-    console.log("Password updated successfully");
     alert("Password updated successfully");
     window.location.href = "http://localhost:3000/user/login";
   } catch (err) {
