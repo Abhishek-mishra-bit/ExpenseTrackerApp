@@ -1,7 +1,6 @@
 body {
   font-family: Arial, sans-serif;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
@@ -9,39 +8,39 @@ body {
   margin: 0;
 }
 
-h1 {
-  color: #333;
-}
-
-form {
+.container {
   background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
   width: 100%;
-  max-width: 400px;
   text-align: center;
 }
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
+h1 {
+  color: #333;
+  margin-bottom: 20px;
 }
 
-input {
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input[type="email"] {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
+  padding: 12px;
   border-radius: 5px;
+  border: 1px solid #ccc;
   font-size: 16px;
 }
 
 button {
   width: 100%;
-  padding: 10px;
-  background-color: #666;
+  padding: 12px;
+  background-color: cadetblue;
   color: white;
   border: none;
   border-radius: 5px;
@@ -51,27 +50,19 @@ button {
 }
 
 button:hover {
-  background-color: #333;
+  background-color: black;
 }
 
 p {
   margin-top: 10px;
   font-size: 14px;
-  color: #666;
 }
 
-a {
+p a {
   color: #007bff;
   text-decoration: none;
 }
 
-a:hover {
+p a:hover {
   text-decoration: underline;
-}
-
-#message {
-  margin-top: 10px;
-  font-size: 14px;
-  color: green;
-  font-weight: bold;
 }

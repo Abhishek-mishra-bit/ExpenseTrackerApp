@@ -1,5 +1,4 @@
 const formE1 = document.getElementById("expense-form");
-const User = require(".../models/User");
 
 console.log("jai baba ki");
 

@@ -7,19 +7,21 @@
     <link rel="stylesheet" href="/css/forgotEmailForm.css" />
   </head>
   <body>
-    <h1>Forgot Password</h1>
-    <form onsubmit="handleFormSubmit(event)">
-      <label for="email">Email:</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="Enter your email to reset your password"
-        required />
-      <button type="submit" id="submit-btn">Submit</button>
-    </form>
-    <p>Back to <a href="http://localhost:3000/user/login">Login</a></p>
-    <p id="message"></p>
+    <div class="container">
+      <h1>Forgot Password</h1>
+      <form onsubmit="handleFormSubmit(event)">
+        <label for="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email to reset your password"
+          required />
+        <button type="submit" id="submit-btn">Submit</button>
+      </form>
+      <p>Back to <a href="http://localhost:3000/user/login">Login</a></p>
+      <p id="message"></p>
+    </div>
   </body>
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"

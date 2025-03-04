@@ -3,6 +3,8 @@ dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+const helmet = require("helmet");
+var compression = require("compression");
 
 const userRoutes = require("./src/routes/user");
 const expenseRoutes = require("./src/routes/expense");
@@ -19,6 +21,7 @@ const Order = require("./src/models/order");
 const app = express();
 
 // Built-in Express middleware for parsing JSON
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,6 +40,9 @@ Expense.belongsTo(User, { foreignKey: "userId" });
 
 User.hasMany(Order);
 Order.belongsTo(User);
+
+app.use(compression());
+app.use(helmet());
 
 sequelize
   .sync({ force: false })
