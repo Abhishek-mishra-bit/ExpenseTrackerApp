@@ -23,6 +23,7 @@ const expenseData = sequelize.define("expense", {
   },
   userId: {
     type: Sequelize.INTEGER,
+    index: true, // Add index to userId
   },
 });
 

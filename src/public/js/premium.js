@@ -4,6 +4,7 @@ const leaderboardSection = document.getElementById("leaderboard-section");
 const leaderboardBody = document.getElementById("leaderboard-list");
 const token = localStorage.getItem("token");
 const rzpButton = document.getElementById("rzp-button");
+const downloadExpense = document.getElementById("download-expense");
 
 leaderboardButton.addEventListener("click", async (event) => {
   event.preventDefault();
@@ -52,10 +53,13 @@ async function hideOrNot() {
     if (response.data.isPremiumUser) {
       rzpButton.style.display = "none";
       leaderboardButton.style.display = "block";
+      downloadExpense.style.display = "block";
       const premiumText = document.getElementById("premiumText");
       premiumText.textContent = "Thanks for being a premium user!";
       // Remove inline !important; define it in CSS if needed
       premiumText.style.fontWeight = "bold";
+    } else {
+      localStorage.setItem("isPremiumUser", false);
     }
   } catch (err) {
     console.error("Error checking premium status:", err);

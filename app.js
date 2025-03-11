@@ -3,7 +3,7 @@ dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const helmet = require("helmet");
+
 var compression = require("compression");
 
 const userRoutes = require("./src/routes/user");
@@ -26,6 +26,9 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// Enable compression middleware
+app.use(compression());
+
 app.use(express.static(path.join(__dirname, "src", "public")));
 
 // Add a route for user signup
@@ -40,9 +43,6 @@ Expense.belongsTo(User, { foreignKey: "userId" });
 
 User.hasMany(Order);
 Order.belongsTo(User);
-
-app.use(compression());
-app.use(helmet());
 
 sequelize
   .sync({ force: false })

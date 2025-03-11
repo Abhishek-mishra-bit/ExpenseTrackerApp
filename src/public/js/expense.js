@@ -1,7 +1,5 @@
 const formE1 = document.getElementById("expense-form");
 
-console.log("jai baba ki");
-
 async function handleFormSubmit(event) {
   console.log("formE1 is hitting");
 
@@ -163,6 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "http://localhost:3000/user/login"; // Redirect to login page
     return;
   }
+  const isPremiumUser = localStorage.getItem("isPremiumUser");
+  if (isPremiumUser === "true") {
+    downloadExpense.style.display = "block";
+  }
 });
 
 async function download() {
@@ -177,10 +179,10 @@ async function download() {
     const csvData = [
       "Amount,Description,Category,Date",
       ...response.data.map(
-        (item) =>
-          `${item.expenseAmount},${item.description},${
-            item.category
-          },${new Date(item.createdAt).toLocaleDateString()}`
+        (item) => `
+          ${item.expenseAmount},${item.description},${item.category},${new Date(
+          item.createdAt
+        ).toLocaleDateString()}`
       ),
     ].join("\n");
 
