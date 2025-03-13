@@ -5,6 +5,78 @@ const User = require("../models/user");
 const sequelize = require("../util/database");
 const { Op } = require("sequelize");
 const moment = require("moment");
+const AWS = require("aws-sdk");
+const fs = require("fs");
+const DownloadHistory = require("../models/downloadHistory");
+
+
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+const s3 = new AWS.S3();
+
+exports.downloadExpensesAndUploadToS3 = async (req, res) => {
+  const userId = req.user.id;
+  try{
+    const expenses = await expenseData.findAll({where:{userId}});
+     if(expenses.length === 0){
+      return res.status(404).json({message:"no expenses found to download"})
+     }
+     const csvData = [
+      "Amount,Description,Category,Date",
+      ...expenses.map(
+        (item) =>
+          `${item.expenseAmount},${item.description},${item.category},${item.createdAt}`
+      ),
+    ].join("\n");
+
+    const fileName = `expenses_${userId}_${Date.now()}.csv`;
+    const filePath = path.join(__dirname, "../temp", fileName);
+    fs.writeFileSync(filePath, csvData);
+
+    // Upload to S3
+    const fileContent = fs.readFileSync(filePath);
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: `expenses/${fileName}`,
+      Body: fileContent,
+      ContentType: "text/csv",
+    };
+
+    const s3Upload = await s3.upload(params).promise();
+    const fileUrl = s3Upload.Location;
+
+    // Save file URL in DB
+    await DownloadHistory.create({ userId, fileUrl });
+
+    // Delete local file after upload
+    fs.unlinkSync(filePath);
+
+    res.status(200).json({ fileUrl, message: "File uploaded successfully" });
+  } catch (error) {
+    console.error("Error downloading and uploading expenses:", error);
+    res.status(500).json({ error: "Failed to process request" });
+  }
+
+  
+};
+exports.getDownloadHistory = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const history = await DownloadHistory.findAll({
+      where: { userId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(history);
+  } catch (error) {
+    console.error("Error fetching download history:", error);
+    res.status(500).json({ error: "Failed to fetch history" });
+  }
+};
 
 exports.getExpensePage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "expense.html"));

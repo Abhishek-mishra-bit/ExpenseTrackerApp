@@ -3,6 +3,7 @@ dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 
 var compression = require("compression");
 
@@ -21,7 +22,7 @@ const Order = require("./src/models/order");
 const app = express();
 
 // Built-in Express middleware for parsing JSON
-
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

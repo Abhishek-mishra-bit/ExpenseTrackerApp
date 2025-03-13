@@ -22,5 +22,8 @@ router.get(
   authenticate,
   expenseController.getExpensesDataPaginated
 );
+router.get("/expensees/download", authenticate, expenseController.downloadExpensesAndUploadToS3);
+router.get("/expensess/download-history", authenticate, expenseController.getDownloadHistory);
+
 
 module.exports = router;

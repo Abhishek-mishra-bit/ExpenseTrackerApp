@@ -161,41 +161,48 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "http://localhost:3000/user/login"; // Redirect to login page
     return;
   }
-  const isPremiumUser = localStorage.getItem("isPremiumUser");
-  if (isPremiumUser === "true") {
-    downloadExpense.style.display = "block";
-  }
+  loadDownloadHistory;
 });
 
 async function download() {
   try {
     const response = await axios.get(
-      "http://localhost:3000/userexpense/expenses/data",
-      {
-        headers: { Authorization: localStorage.getItem("token") },
-      }
+      "http://localhost:3000/userexpense/expensees/download",
+      { headers: { Authorization: localStorage.getItem("token") } }
     );
 
-    const csvData = [
-      "Amount,Description,Category,Date",
-      ...response.data.map(
-        (item) => `
-          ${item.expenseAmount},${item.description},${item.category},${new Date(
-          item.createdAt
-        ).toLocaleDateString()}`
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csvData], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "expenses.csv";
-    a.click();
-    alert("Expenses downloaded successfully");
-    window.URL.revokeObjectURL(url);
+    alert("File uploaded to S3. Click 'Show Download History' to see past files.");
+    loadDownloadHistory(); // Fetch and display download history
   } catch (error) {
     console.error("Error downloading expenses:", error);
     alert("Failed to download expenses");
   }
 }
+
+async function loadDownloadHistory() {
+  try {
+    const response = await axios.get(
+      "http://localhost:3000/userexpense/expensess/download-history",
+      { headers: { Authorization: localStorage.getItem("token") } }
+    );
+
+    const historyContainer = document.getElementById("download-history");
+    historyContainer.innerHTML = "";
+
+    response.data.forEach((item, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${new Date(item.createdAt).toLocaleString()}</td>
+        <td><a href="${item.fileUrl}" target="_blank" class="btn btn-primary">Download</a></td>
+      `;
+      historyContainer.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error fetching download history:", error);
+  }
+}
+
+// Call this function when the page loads
+document.addEventListener("DOMContentLoaded", loadDownloadHistory);
+

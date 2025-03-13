@@ -5,7 +5,7 @@ const userData = require("../models/user");
 const jwt = require("jsonwebtoken");
 const { isPremium } = require("./purchase");
 const sequelize = require("../util/database");
-require("dotenv").config();
+
 
 exports.getSignUpPage = (req, res) => {
   res.sendFile(path.join(rootDir, "views", "signup.html"));
