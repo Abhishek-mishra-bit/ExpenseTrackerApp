@@ -8,14 +8,16 @@ formE1.addEventListener("submit", (e) => {
   formData.forEach((value, key) => {
     data[key] = value;
   });
-
+  
   axios
-    .post("http://localhost:3000/user/login", data, {
+    .post("http://13.233.118.229:3000/user/login", data, {
       headers: {
         // Correct header key
         "Content-Type": "application/json",
       },
     })
+    console.log("response");
+    
     .then((result) => {
       alert("User login Successfully");
 
@@ -23,7 +25,7 @@ formE1.addEventListener("submit", (e) => {
       localStorage.setItem("token", result.data.token);
 
       // Redirect to expenses page
-      window.location.href = "http://localhost:3000/userexpense/expenses/";
+      window.location.href = "http://13.233.118.229:3000/userexpense/expenses/";
     })
     .catch((err) => {
       console.log("User login failed", err);
@@ -34,5 +36,5 @@ formE1.addEventListener("submit", (e) => {
 });
 
 forgot_btn.addEventListener("click", () => {
-  window.location.href = "http://localhost:3000/forgot/emailform";
+  window.location.href = "http://13.233.118.229:3000/forgot/emailform";
 });
