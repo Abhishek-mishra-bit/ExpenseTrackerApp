@@ -11,14 +11,14 @@ async function handleFormSubmit(event) {
     return;
   }
   try {
-    const response = axios.post("http://localhost:3000/forgot/resetPassword", {
+    const response = axios.post(`${baseUrl}/forgot/resetPassword`,{
       requestId: requestId,
       newPassword: password,
       headers: { "Content-Type": "application/json" },
     });
 
     alert("Password updated successfully");
-    window.location.href = "http://localhost:3000/user/login";
+    window.location.href = `${baseUrl}/user/login`;
   } catch (err) {
     console.error("Error updating password", err);
     alert("Error updating password");

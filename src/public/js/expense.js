@@ -1,4 +1,6 @@
 const formE1 = document.getElementById("expense-form");
+const baseUrl = window.location.origin;
+
 
 async function handleFormSubmit(event) {
   console.log("formE1 is hitting");
@@ -14,7 +16,7 @@ async function handleFormSubmit(event) {
 
   try {
     const response = await axios.post(
-      "http://localhost:3000/userexpense/expensesData",
+      `${baseUrl}/userexpense/expensesData`,
       expense,
       {
         headers: { Authorization: token },
@@ -84,7 +86,7 @@ async function loadFullReport(page = 1, filter = "all") {
   const limit = localStorage.getItem("expensesLimit")
     ? parseInt(localStorage.getItem("expensesLimit"))
     : 5;
-  let url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&row=${limit}&filter=${filter}`;
+  let url = `${baseUrl}/userexpense/expenses/paginated?page=${page}&row=${limit}&filter=${filter}`;
   if (filter === "custom") {
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
@@ -95,7 +97,7 @@ async function loadFullReport(page = 1, filter = "all") {
       return;
     }
 
-    url = `http://localhost:3000/userexpense/expenses/paginated?page=${page}&row=${limit}&from=${fromDate}&to=${toDate}`;
+    url = `${baseUrl}/userexpense/expenses/paginated?page=${page}&row=${limit}&from=${fromDate}&to=${toDate}`;
   }
   try {
     const response = await axios.get(url, {
@@ -143,7 +145,7 @@ async function showReport(event) {
 
 async function deleteReport(id, currentPage, filter) {
   try {
-    await axios.delete(`http://localhost:3000/userexpense/expenses/${id}`, {
+    await axios.delete(`${baseUrl}/userexpense/expenses/${id}`, {
       headers: { Authorization: localStorage.getItem("token") },
     });
     alert("Expense deleted successfully");
@@ -158,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token");
   if (!token) {
     alert("Session expired! Please log in again.");
-    window.location.href = "http://localhost:3000/user/login"; // Redirect to login page
+    window.location.href = `${baseUrl}/user/login`; // Redirect to login page
     return;
   }
   loadDownloadHistory;
@@ -167,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function download() {
   try {
     const response = await axios.get(
-      "http://localhost:3000/userexpense/expensees/download",
+      `${baseUrl}/userexpense/expensees/download`,
       { headers: { Authorization: localStorage.getItem("token") } }
     );
 
@@ -182,7 +184,7 @@ async function download() {
 async function loadDownloadHistory() {
   try {
     const response = await axios.get(
-      "http://localhost:3000/userexpense/expensess/download-history",
+      `${baseUrl}/userexpense/expensess/download-history`,
       { headers: { Authorization: localStorage.getItem("token") } }
     );
 

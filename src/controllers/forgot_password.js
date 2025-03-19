@@ -34,7 +34,7 @@ exports.sendForgotPasswordEmail = async (req, res) => {
     email: "techshivam.56@gmail.com",
   };
 
-  const resetPasswordLink = `http://localhost:3000/forgot/update_password/${requestId}`;
+  const resetPasswordLink = `${baseUrl}/forgot/update_password/${requestId}`;
 
   const reciever = {
     email: email,

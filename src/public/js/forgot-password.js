@@ -1,10 +1,11 @@
 const message = document.getElementById("message");
+const baseUrl = window.location.origin;
 
 async function handleFormSubmit(event) {
   event.preventDefault();
   try {
     const email = event.target.email.value;
-    const response = await axios.post("http://localhost:3000/forgot/password", {
+    const response = await axios.post(`${baseUrl}/forgot/password`, {
       email,
     });
 

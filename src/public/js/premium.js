@@ -6,6 +6,7 @@ const token = localStorage.getItem("token");
 const rzpButton = document.getElementById("rzp-button");
 const downloadExpense = document.getElementById("download-expense");
 
+
 leaderboardButton.addEventListener("click", async (event) => {
   event.preventDefault();
   try {
@@ -14,7 +15,7 @@ leaderboardButton.addEventListener("click", async (event) => {
       leaderboardButton.textContent = "Show leaderboard";
     } else {
       const response = await axios.get(
-        "http://localhost:3000/premium/leaderboard",
+        `${baseUrl}/premium/leaderboard`,
         {
           headers: { Authorization: token },
         }
@@ -43,8 +44,8 @@ leaderboardButton.addEventListener("click", async (event) => {
 
 async function hideOrNot() {
   try {
-    const response = await axios.get(
-      "http://localhost:3000/purchase/ispremium",
+    const response = await axios.get( 
+      `${baseUrl}/purchase/ispremium`,
       {
         headers: { Authorization: token },
       }

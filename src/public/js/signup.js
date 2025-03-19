@@ -1,3 +1,5 @@
+
+const baseUrl = window.location.origin;
 async function handleSubmit(event) {
   event.preventDefault();
   try {
@@ -6,13 +8,17 @@ async function handleSubmit(event) {
       email: event.target.email.value,
       password: event.target.password.value,
     };
+    
     console.log(data);
 
     // Send POST request with form data as JSON
-    await axios.post("http://localhost:3000/user/signup", data);
+    await axios.post(`${baseUrl}/user/signup`, data);
+
     alert("User sign in successfully");
 
-    window.location.href = "http://localhost:3000/user/login";
+    window.location.href = `${baseUrl}/user/login`;
+    alert(baseUrl)
+
   } catch (error) {
     // Create a FormData object to capture form input
 

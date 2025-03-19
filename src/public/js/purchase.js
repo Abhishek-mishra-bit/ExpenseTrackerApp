@@ -1,7 +1,7 @@
 rzpButton.addEventListener("click", async () => {
   try {
     const response = await axios.post(
-      "http://localhost:3000/purchase/purchase-premium",
+      `${baseUrl}/purchase/purchase-premium`,
       {},
       { headers: { Authorization: token } }
     );
@@ -18,7 +18,7 @@ rzpButton.addEventListener("click", async () => {
       handler: async function (res) {
         try {
           const updateResponse = await axios.post(
-            "http://localhost:3000/purchase/update-transaction-status",
+            `${baseUrl}/purchase/update-transaction-status`,
             {
               success: true,
               orderId: res.razorpay_order_id,
@@ -46,7 +46,7 @@ rzpButton.addEventListener("click", async () => {
     rzp1.on("payment.failed", async function (response) {
       try {
         await axios.post(
-          "http://localhost:3000/purchase/update-transaction-status",
+          `${baseUrl}/purchase/update-transaction-status`,
           {
             success: false,
             order_id: response.error.metadata.order_id,
