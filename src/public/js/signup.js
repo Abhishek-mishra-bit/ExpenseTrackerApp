@@ -1,5 +1,9 @@
 
 const baseUrl = window.location.origin;
+const sign_in = document.getElementById("sign_in");
+sign_in.addEventListener("click",()=>{
+  indow.location.href = `${baseUrl}/user/login`;
+})
 async function handleSubmit(event) {
   event.preventDefault();
   try {
