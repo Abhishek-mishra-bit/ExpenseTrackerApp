@@ -1,36 +1,16 @@
-const User = require("../models/user");
-const Expense = require("../models/expenseData");
-const sequelize = require("../util/database");
+const User = require('../models/user');
 
-exports.leaderboard = async (req, res) => {
-  const t = await sequelize.transaction();
+exports.showLeaderboard = async (req, res) => {
   try {
-    // Fetch user names for each user ID in totalExpenses
-
-    const users = await User.findAll({
-      attributes: [
-        "name",
-        "id",
-        [sequelize.fn("sum", sequelize.col("expenseAmount")), "total_cost"],
-      ],
-      include: [
-        {
-          model: Expense,
-          attributes: [],
-        },
-      ],
-      group: ["id"],
-      raw: true,
-      transaction: t,
-    });
-
-    // Sort users by total_cost in descending order
-    users.sort((a, b) => b.total_cost - a.total_cost);
-    await t.commit();
-    return res.status(200).json(users);
+    // Find all users, select only name and totalExpenses, 
+    // and sort by totalExpenses in descending order.
+    const leaderboard = await User.find({})
+      .select('name totalExpenses')
+      .sort({ totalExpenses: -1 });
+    console.log('Leaderboard fetched successfully:', leaderboard);
+    res.status(200).json(leaderboard);
   } catch (err) {
-    console.error("Error fetching leaderboard function", err);
-    await t.rollback();
-    return res.status(500).json({ error: "Error fetching leaderboard" });
+    console.error('Error fetching leaderboard:', err);
+    res.status(500).json({ message: 'Failed to fetch leaderboard', error: err });
   }
 };

@@ -1,29 +1,23 @@
-const expenseController = require("../controllers/expense");
-const express = require("express");
-const { authenticate } = require("../middleware/auth");
+const express = require('express');
 const router = express.Router();
+const expenseController = require('../controllers/expense');
+const userAuthentication = require('../middleware/auth');
 
-router.get(
-  "/expenses/data",
-  authenticate,
-  expenseController.getExpensesDataInJson
-);
-router.post("/expensesData", authenticate, expenseController.postExpenseData);
-router.get("/expenses/", expenseController.getExpensePage);
+// Route to serve the main expense page
+router.get('/expenses', expenseController.getExpensePage);
 
-router.delete(
-  "/expenses/:expenseId",
-  authenticate,
-  expenseController.deleteExpense
-);
+// Route to add a new expense
+router.post('/expensesData', userAuthentication.authenticate, expenseController.postExpenseData);
 
-router.get(
-  "/expenses/paginated",
-  authenticate,
-  expenseController.getExpensesDataPaginated
-);
-router.get("/expensees/download", authenticate, expenseController.downloadExpensesAndUploadToS3);
-router.get("/expensess/download-history", authenticate, expenseController.getDownloadHistory);
+// Route to get a paginated list of expenses
+router.get("/expenses/paginated",userAuthentication.authenticate, expenseController.getExpenses);
+// Route to delete an expense
+router.delete('/expenses/:expenseId', userAuthentication.authenticate, expenseController.deleteExpense);
 
+// Route to download expenses as a file
+router.get('/expenses/download', userAuthentication.authenticate, expenseController.getExpenses);
+
+// Route to get the user's download history
+router.get('/expensess/download-history', userAuthentication.authenticate, expenseController.getDownloadHistory);
 
 module.exports = router;

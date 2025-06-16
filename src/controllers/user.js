@@ -1,86 +1,81 @@
 const path = require("path");
+const User = require("../models/user");
 const bcrypt = require("bcrypt");
-const rootDir = require("../util/path");
-const userData = require("../models/user");
 const jwt = require("jsonwebtoken");
-const { isPremium } = require("./purchase");
-const sequelize = require("../util/database");
 
-
-exports.getSignUpPage = (req, res) => {
-  res.sendFile(path.join(rootDir, "views", "signup.html"));
-};
-exports.getLoginPage = (req, res) => {
-  res.sendFile(path.join(rootDir, "views", "login.html"));
+// Function to generate JWT token
+const generateAccessToken = (id, name, isPremium) => {
+  return jwt.sign({ userId: id, name: name, isPremium }, process.env.JWT_SECRET);
 };
 
-exports.postSignUpPage = async (req, res) => {
+// Serve the signup page
+exports.getSignUp = (req, res, next) => {
+  res.sendFile(path.join(__dirname, "..", "views", "signup.html"));
+};
+
+// Handle user signup
+exports.postSignUp = async (req, res, next) => {
   const { name, email, password } = req.body;
-
-  const t = await sequelize.transaction();
   try {
-    const user = await userData.findOne({
-      where: { email: email },
-      transaction: t,
-    });
-    if (user) {
-      await t.rollback();
-      return res.status(400).json({ error: "User already exists" });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
     }
 
+    // Hash the password
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hash = await bcrypt.hash(password, saltRounds);
 
-    const newUser = await userData.create(
-      {
-        name,
-        email,
-        password: hashedPassword,
-      },
-      { transaction: t }
-    );
-    await t.commit();
-    return res.status(200).json({
-      success: true,
-      message: "User created successfully",
-    });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    await t.rollback();
-    res.status(500).json({ error: "Error creating user" });
+    // Create a new user
+    await User.create({ name, email, password: hash });
+    res.status(201).json({ message: "User created successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
-exports.postLoginPage = async (req, res) => {
+// Serve the login page
+exports.getLogin = (req, res, next) => {
+  res.sendFile(path.join(__dirname, "..", "views", "login.html"));
+};
+
+// Handle user login
+exports.postLogin = async (req, res, next) => {
   const { email, password } = req.body;
-
   try {
-    const user = await userData.findOne({ where: { email: email } });
-
+    // Find user by email
+    const user = await User.findOne({ email: email });
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User does not exist" });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Incorrect password" });
+    // Compare passwords
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (passwordMatch) {
+      // Respond with a token on successful login
+      res.status(200).json({
+        message: "User login successful",
+        token: generateAccessToken(user._id, user.name, user.isPremiumUser),
+      });
+    } else {
+      // Respond with an error for wrong password
+      res.status(401).json({ message: "User not authorized" });
     }
-
-    const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY);
-
-    return res.status(200).json({
-      message: "User login successful",
-      success: true,
-      token: token,
-    });
   } catch (err) {
-    console.error("Error during login:", err);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    console.log(err);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+// Get user premium status
+exports.getUserStatus = async (req, res) => {
+  try {
+    // The user object is attached by the authenticate middleware
+    res.status(200).json({ isPremium: req.user.isPremiumUser || false, success: true });
+  } catch (err) {
+    console.error('Error fetching user status:', err);
+    res.status(500).json({ error: 'Failed to retrieve user status', success: false });
   }
 };

@@ -1,44 +1,43 @@
 rzpButton.addEventListener("click", async () => {
   try {
     const response = await axios.post(
-      `${baseUrl}/purchase/purchase-premium`,
+      `${baseUrl}/purchase/premiummembership`,
       {},
       { headers: { Authorization: token } }
     );
 
     const options = {
       key: response.data.key_id,
-      amount: response.data.amount,
+      amount: response.data.order.amount,
       currency: "INR",
       name: "Abhishek Corp",
       description: "Test Transaction",
-      image:
-        "https://www.creativefabrica.com/wp-content/uploads/2019/02/Money-dollar-payment-logo-vector-by-Mansel-Brist.jpg",
-      order_id: response.data.orderId,
+      image: "https://www.creativefabrica.com/wp-content/uploads/2019/02/Money-dollar-payment-logo-vector-by-Mansel-Brist.jpg",
+      order_id: response.data.order.id, 
       handler: async function (res) {
         try {
           const updateResponse = await axios.post(
-            `${baseUrl}/purchase/update-transaction-status`,
+            `${baseUrl}/purchase/updatetransactionstatus`,
             {
               success: true,
-              orderId: res.razorpay_order_id,
+              order_id: res.razorpay_order_id,
               payment_id: res.razorpay_payment_id,
             },
             { headers: { Authorization: token } }
           );
 
-          if (updateResponse.data.isPremiumUser) {
+          if (updateResponse.data.success) {
             alert("You are now a Premium user");
-            // Optionally call a function to update UI, e.g., hide the premium button.
             hideOrNot(); // Refresh UI
           }
         } catch (error) {
           console.error("Error updating transaction:", error);
           alert("Transaction update failed");
         }
-      },
+      },  
       theme: { color: "#3399cc" },
     };
+
 
     const rzp1 = new Razorpay(options);
     rzp1.open();
@@ -46,7 +45,7 @@ rzpButton.addEventListener("click", async () => {
     rzp1.on("payment.failed", async function (response) {
       try {
         await axios.post(
-          `${baseUrl}/purchase/update-transaction-status`,
+          `${baseUrl}/purchase/updatetransactionstatus`,
           {
             success: false,
             order_id: response.error.metadata.order_id,

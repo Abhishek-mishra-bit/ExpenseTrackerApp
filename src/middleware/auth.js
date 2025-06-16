@@ -13,9 +13,9 @@ exports.authenticate = async (req, res, next) => {
 
     const token = authHeader;
 
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findByPk(decoded.userId);
+    const user = await User.findById(decoded.userId);
     if (!user) {
       return res
         .status(404)
