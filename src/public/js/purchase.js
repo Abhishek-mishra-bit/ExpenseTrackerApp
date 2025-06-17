@@ -27,12 +27,28 @@ rzpButton.addEventListener("click", async () => {
           );
 
           if (updateResponse.data.success) {
-            alert("You are now a Premium user");
+            await Swal.fire({
+              position: 'top-end',
+              icon: 'success',
+              title: 'Premium Activated!',
+              text: 'You are now a Premium user',
+              showConfirmButton: false,
+              timer: 3000,
+              toast: true
+            });
             hideOrNot(); // Refresh UI
           }
         } catch (error) {
           console.error("Error updating transaction:", error);
-          alert("Transaction update failed");
+          await Swal.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Error',
+            text: 'Transaction update failed',
+            showConfirmButton: false,
+            timer: 3000,
+            toast: true
+          });
         }
       },  
       theme: { color: "#3399cc" },
@@ -53,14 +69,38 @@ rzpButton.addEventListener("click", async () => {
           },
           { headers: { Authorization: token } }
         );
-        alert(response.error.description);
+        await Swal.fire({
+          position: 'top-end',
+          icon: 'error',
+          title: 'Payment Failed',
+          text: response.error.description,
+          showConfirmButton: false,
+          timer: 3000,
+          toast: true
+        });
       } catch (error) {
         console.error("Error updating transaction:", error);
-        alert("Transaction update failed");
+        await Swal.fire({
+          position: 'top-end',
+          icon: 'error',
+          title: 'Error',
+          text: 'Transaction update failed',
+          showConfirmButton: false,
+          timer: 3000,
+          toast: true
+        });
       }
     });
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
-    alert("Failed to create Razorpay order");
+    await Swal.fire({
+      position: 'top-end',
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to create Razorpay order',
+      showConfirmButton: false,
+      timer: 3000,
+      toast: true
+    });
   }
 });

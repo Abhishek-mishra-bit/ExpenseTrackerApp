@@ -18,12 +18,26 @@ async function handleFormSubmit(event) {
         headers: { Authorization: token },
       }
     );
-    alert("Expense added successfully");
+    
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Expense added successfully',
+      confirmButtonColor: '#0d6efd',
+      timer: 2000,
+      timerProgressBar: true
+    });
+    
     formE1.reset();
     loadFullReport(); // Refresh the report to show the new expense
   } catch (err) {
     console.error("Error adding expense:", err);
-    alert("Error adding expense");
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to add expense. Please try again.',
+      confirmButtonColor: '#dc3545'
+    });
   }
 }
 
@@ -73,16 +87,22 @@ function updateReportPaginationControls(currentPage, totalPages, filter) {
 }
 
 async function loadFullReport(page = 1, filter = "all") {
-  const limit = localStorage.getItem("expensesLimit")
-    ? parseInt(localStorage.getItem("expensesLimit"))
-    : 5;
+  const limit = parseInt(localStorage.getItem("expensesLimit")) || 5;
   let url = `${baseUrl}/userexpense/expenses/paginated?page=${page}&row=${limit}&filter=${filter}`;
 
   if (filter === "custom") {
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
     if (!fromDate || !toDate) {
-      alert("Please select both From and To dates");
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Missing Dates',
+        text: 'Please select both From and To dates',
+        confirmButtonColor: '#ffc107',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true
+      });
       return;
     }
     url += `&from=${fromDate}&to=${toDate}`;
@@ -92,7 +112,9 @@ async function loadFullReport(page = 1, filter = "all") {
     const response = await axios.get(url, {
       headers: { Authorization: localStorage.getItem("token") },
     });
+
     const { expenses, currentPage, totalPages } = response.data;
+
     const expenseTableBody = document.getElementById("expense-table-body");
     expenseTableBody.innerHTML = "";
 
@@ -101,6 +123,7 @@ async function loadFullReport(page = 1, filter = "all") {
       index++;
       const dateObj = new Date(item.createdAt);
       const formattedDate = dateObj.toLocaleDateString("en-GB");
+
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${index}</td>
@@ -108,17 +131,52 @@ async function loadFullReport(page = 1, filter = "all") {
         <td>${item.description}</td>
         <td>${item.category}</td>
         <td>${formattedDate}</td>
-        <td><button onclick="deleteReport(${item.id}, ${currentPage}, '${filter}')" class="btn btn-danger">Delete</button></td>
+        <td><button onclick="deleteReport('${item._id}', ${currentPage}, '${filter}')" class="btn btn-danger">Delete</button></td>
       `;
       expenseTableBody.appendChild(row);
     });
 
     updateReportPaginationControls(currentPage, totalPages, filter);
-  } catch (error) {
-    console.error("Error loading full report:", error);
-    alert("Failed to load full report: " + error.message);
+  } catch (err) {
+    console.error("Error loading report:", err);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error Loading Report',
+      text: 'Failed to load expenses. Please try again.',
+      confirmButtonColor: '#dc3545',
+      timer: 3000,
+      timerProgressBar: true
+    });
   }
 }
+
+function updateReportPaginationControls(currentPage, totalPages, filter) {
+  const reportPagination = document.getElementById("report-pagination-controls");
+  reportPagination.innerHTML = "";
+
+  if (currentPage > 1) {
+    const prevButton = document.createElement("button");
+    prevButton.className = "btn btn-secondary";
+    prevButton.innerText = "Previous";
+    prevButton.onclick = () => loadFullReport(currentPage - 1, filter);
+    reportPagination.appendChild(prevButton);
+  }
+
+  const pageInfo = document.createElement("span");
+  pageInfo.className = "mx-2";
+  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+  reportPagination.appendChild(pageInfo);
+
+  if (currentPage < totalPages) {
+    const nextButton = document.createElement("button");
+    nextButton.className = "btn btn-secondary";
+    nextButton.innerText = "Next";
+    nextButton.onclick = () => loadFullReport(currentPage + 1, filter);
+    reportPagination.appendChild(nextButton);
+  }
+}
+
+
 
 async function showReport(event) {
   event.preventDefault();
@@ -130,17 +188,48 @@ async function showReport(event) {
 }
 
 async function deleteReport(id, currentPage, filter) {
+  console.log("Deleting expense with ID:", id);
   try {
-    await axios.delete(`${baseUrl}/userexpense/expenses/${id}`, {
-      headers: { Authorization: localStorage.getItem("token") },
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#198754',
+      cancelButtonColor: '#dc3545',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
     });
-    alert("Expense deleted successfully");
-    loadFullReport(currentPage, filter);
+
+    if (result.isConfirmed) {
+      await axios.delete(`${baseUrl}/userexpense/expenses/${id}`, {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Expense has been deleted.',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+      });
+      
+      loadFullReport(currentPage, filter);
+    }
   } catch (err) {
     console.error("Error deleting expense:", err);
-    alert("Failed to delete expense");
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to delete expense. Please try again.',
+      confirmButtonColor: '#dc3545',
+      timer: 3000,
+      timerProgressBar: true
+    });
   }
 }
+
 
 async function download() {
   try {
@@ -165,13 +254,30 @@ async function download() {
       a.click();
       URL.revokeObjectURL(url);
 
-      alert("Download started!");
+      await Swal.fire({
+        icon: 'success',
+        title: 'Download Started',
+        text: 'Your expense report is being downloaded.',
+        confirmButtonColor: '#198754',
+        timer: 2000,
+        timerProgressBar: true
+      });
     } else {
-      alert("No expenses found to download.");
+      await Swal.fire({
+        icon: 'info',
+        title: 'No Expenses',
+        text: 'No expenses found to download.',
+        confirmButtonColor: '#0dcaf0'
+      });
     }
   } catch (err) {
     console.error("Error downloading expenses:", err);
-    alert("Failed to download expenses.");
+    await Swal.fire({
+      icon: 'error',
+      title: 'Download Failed',
+      text: 'Failed to download expenses. Please try again.',
+      confirmButtonColor: '#dc3545'
+    });
   }
 }
 
@@ -200,11 +306,19 @@ async function download() {
 //   }
 // }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("token");
   if (!token) {
-    alert("Session expired! Please log in again.");
-    window.location.href = `${baseUrl}/user/login`;
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Session Expired',
+      text: 'Your session has expired. Please log in again.',
+      confirmButtonColor: '#ffc107',
+      confirmButtonText: 'Go to Login',
+      allowOutsideClick: false
+    }).then(() => {
+      window.location.href = `${baseUrl}/user/login`;
+    });
     return;
   }
   formE1.addEventListener("submit", handleFormSubmit);

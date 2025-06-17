@@ -18,14 +18,42 @@ async function handleSubmit(event) {
     // Send POST request with form data as JSON
     await axios.post(`${baseUrl}/user/signup`, data);
 
-    alert("User sign in successfully");
+    await Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'User sign in successfully!',
+      text: 'Redirecting to your login page...',
+      showConfirmButton: false,
+      timer: 1500,
+      timerProgressBar: true
+    });
 
     window.location.href = `${baseUrl}/user/login`;
-    alert(baseUrl)
 
   } catch (error) {
     // Create a FormData object to capture form input
 
     console.error("Error during signup", error);
+    let errorMessage = "Signup failed. Please check your credentials and try again.";
+    
+    // More specific error messages based on the error response
+    if (error.response) {
+      if (error.response.status === 401) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.response.status === 404) {
+        errorMessage = "User not found. Please check your email address.";
+      } else if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+    }
+    
+    await Swal.fire({
+      position: 'center',
+      icon: 'error',
+      title: 'Signup Failed',
+      text: errorMessage,
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: 'Try Again'
+    });
   }
 }

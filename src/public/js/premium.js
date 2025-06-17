@@ -50,7 +50,6 @@ async function hideOrNot() {
         headers: { Authorization: token },
       }
     );
-    console.log("Premium status response:", response.data);
 
     if (response.data.isPremiumUser) {
       rzpButton.style.display = "none";
