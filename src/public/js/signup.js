@@ -21,7 +21,7 @@ async function handleSubmit(event) {
     await Swal.fire({
       position: 'center',
       icon: 'success',
-      title: 'User sign in successfully!',
+      title: 'Signup successful!',
       text: 'Redirecting to your login page...',
       showConfirmButton: false,
       timer: 1500,

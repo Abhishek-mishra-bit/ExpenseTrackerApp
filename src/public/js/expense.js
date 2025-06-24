@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await Swal.fire({
       icon: 'warning',
       title: 'Session Expired',
-      text: 'Your session has expired. Please log in again.',
+      text: "For your security, you've been signed out. You can log in again anytime.",
       confirmButtonColor: '#ffc107',
       confirmButtonText: 'Go to Login',
       allowOutsideClick: false
@@ -321,6 +321,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     return;
   }
-  formE1.addEventListener("submit", handleFormSubmit);
-});
+  document
+    .getElementById("timeFilter")
+    .addEventListener("change", filterReportChanged);
+  document });
 
