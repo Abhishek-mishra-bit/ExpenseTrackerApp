@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const forgotPasswordController = require('../controllers/forgot_password');
 
+router.get("/emailform", forgotPasswordController.getForgotPasswordPage);
+
 // Route to initiate the password reset process
 router.post('/forgotpassword', forgotPasswordController.forgotPassword);
 

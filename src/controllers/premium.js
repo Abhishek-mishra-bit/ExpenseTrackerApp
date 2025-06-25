@@ -7,7 +7,6 @@ exports.showLeaderboard = async (req, res) => {
     const leaderboard = await User.find({})
       .select('name totalExpenses')
       .sort({ totalExpenses: -1 });
-    console.log('Leaderboard fetched successfully:', leaderboard);
     res.status(200).json(leaderboard);
   } catch (err) {
     console.error('Error fetching leaderboard:', err);

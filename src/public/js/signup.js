@@ -11,9 +11,7 @@ async function handleSubmit(event) {
       name: event.target.name.value,
       email: event.target.email.value,
       password: event.target.password.value,
-    };
-    
-    console.log(data);
+    };    
 
     // Send POST request with form data as JSON
     await axios.post(`${baseUrl}/user/signup`, data);

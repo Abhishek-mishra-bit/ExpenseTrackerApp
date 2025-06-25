@@ -1,6 +1,12 @@
 const Sib = require("sib-api-v3-sdk");
 require("dotenv").config();
 const path = require("path");
+const rootDir = require("../util/path");
+
+
+exports.getForgotPasswordPage = (req, res) => {
+  res.sendFile(path.join(rootDir, "src/views", "forgotEmailForm.html"));
+};
 
 exports.forgotPassword = async (req, res) => {
   try {

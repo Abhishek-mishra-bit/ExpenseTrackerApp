@@ -18,16 +18,27 @@ async function handleFormSubmit(event) {
         headers: { Authorization: token },
       }
     );
-    
-    await Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: 'Expense added successfully',
-      confirmButtonColor: '#0d6efd',
-      timer: 2000,
-      timerProgressBar: true
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+      background: '#198754',
+      color: '#fff',
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
     });
-    
+
+      Toast.fire({
+        icon: 'success',
+        title: 'Expense added'
+      });
+
+
     formE1.reset();
     loadFullReport(); // Refresh the report to show the new expense
   } catch (err) {
@@ -188,7 +199,6 @@ async function showReport(event) {
 }
 
 async function deleteReport(id, currentPage, filter) {
-  console.log("Deleting expense with ID:", id);
   try {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -214,8 +224,25 @@ async function deleteReport(id, currentPage, filter) {
         timer: 1500,
         timerProgressBar: true
       });
-      
-      loadFullReport(currentPage, filter);
+      // Fetching updated report data to check how many items are left
+      const limit = parseInt(localStorage.getItem("expensesLimit")) || 5;
+      const all = filter === "all" ? "all" : "custom";
+
+        const response = await axios.get(`${baseUrl}/userexpense/expenses/paginated?page=${currentPage}&row=${limit}&filter=${all}`, {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+
+      const items = response.data.expenses || [];
+      const totalCount = response.data.totalCount || 0;
+      const totalPages = Math.ceil(totalCount / limit);
+
+      //If current page is now empty, and not the first page, go to previous
+      if (items.length === 0 && currentPage > 1) {
+        loadFullReport(currentPage - 1, all);
+      } else {
+        loadFullReport(currentPage, all);
+      }
+    
     }
   } catch (err) {
     console.error("Error deleting expense:", err);
@@ -325,4 +352,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("timeFilter")
     .addEventListener("change", filterReportChanged);
   document });
+
+function confirmLogout() {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You will be logged out.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, logout'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      localStorage.removeItem('token');
+      window.location.href = '/user/login';
+    }
+  });
+}
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle('dark-mode');
+  body.classList.toggle('light-mode');
+}
 
