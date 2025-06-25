@@ -73,7 +73,11 @@ exports.postLogin = async (req, res, next) => {
 exports.getUserStatus = async (req, res) => {
   try {
     // The user object is attached by the authenticate middleware
-    res.status(200).json({ isPremium: req.user.isPremiumUser || false, success: true });
+    res.status(200).json({ 
+      name: req.user.name,
+      isPremium: req.user.isPremiumUser || false, 
+      success: true 
+    });
   } catch (err) {
     console.error('Error fetching user status:', err);
     res.status(500).json({ error: 'Failed to retrieve user status', success: false });

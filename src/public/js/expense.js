@@ -55,7 +55,7 @@ async function handleFormSubmit(event) {
 function filterReportChanged() {
   const filterValue = document.getElementById("timeFilter").value;
   if (filterValue === "custom") {
-    document.getElementById("customDateFilter").style.display = "block";
+    document.getElementById("customDateFilter").style.display = "flex";
   } else {
     document.getElementById("customDateFilter").style.display = "none";
     loadFullReport(1, filterValue);
@@ -69,36 +69,8 @@ function setExpensesLimit() {
   loadFullReport(1, currentFilter);
 }
 
-function updateReportPaginationControls(currentPage, totalPages, filter) {
-  const reportPagination = document.getElementById(
-    "report-pagination-controls"
-  );
-  reportPagination.innerHTML = "";
-
-  if (currentPage > 1) {
-    const prevButton = document.createElement("button");
-    prevButton.className = "btn btn-secondary";
-    prevButton.innerText = "Previous";
-    prevButton.onclick = () => loadFullReport(currentPage - 1, filter);
-    reportPagination.appendChild(prevButton);
-  }
-
-  const pageInfo = document.createElement("span");
-  pageInfo.className = "mx-2";
-  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
-  reportPagination.appendChild(pageInfo);
-
-  if (currentPage < totalPages) {
-    const nextButton = document.createElement("button");
-    nextButton.className = "btn btn-secondary";
-    nextButton.innerText = "Next";
-    nextButton.onclick = () => loadFullReport(currentPage + 1, filter);
-    reportPagination.appendChild(nextButton);
-  }
-}
-
 async function loadFullReport(page = 1, filter = "all") {
-  const limit = parseInt(localStorage.getItem("expensesLimit")) || 5;
+  const limit = parseInt(localStorage.getItem("expensesLimit")) || 10;
   let url = `${baseUrl}/userexpense/expenses/paginated?page=${page}&row=${limit}&filter=${filter}`;
 
   if (filter === "custom") {
@@ -110,9 +82,6 @@ async function loadFullReport(page = 1, filter = "all") {
         title: 'Missing Dates',
         text: 'Please select both From and To dates',
         confirmButtonColor: '#ffc107',
-        confirmButtonText: 'OK',
-        timer: 3000,
-        timerProgressBar: true
       });
       return;
     }
@@ -142,7 +111,7 @@ async function loadFullReport(page = 1, filter = "all") {
         <td>${item.description}</td>
         <td>${item.category}</td>
         <td>${formattedDate}</td>
-        <td><button onclick="deleteReport('${item._id}', ${currentPage}, '${filter}')" class="btn btn-danger">Delete</button></td>
+        <td><button onclick="deleteReport('${item._id}', ${currentPage}, '${filter}')" class="btn btn-sm btn-danger">Delete</button></td>
       `;
       expenseTableBody.appendChild(row);
     });
@@ -155,39 +124,39 @@ async function loadFullReport(page = 1, filter = "all") {
       title: 'Error Loading Report',
       text: 'Failed to load expenses. Please try again.',
       confirmButtonColor: '#dc3545',
-      timer: 3000,
-      timerProgressBar: true
     });
   }
 }
 
 function updateReportPaginationControls(currentPage, totalPages, filter) {
-  const reportPagination = document.getElementById("report-pagination-controls");
+  const reportPagination = document.getElementById(
+    "report-pagination-controls"
+  );
   reportPagination.innerHTML = "";
+
+  if (totalPages <= 1) return;
 
   if (currentPage > 1) {
     const prevButton = document.createElement("button");
-    prevButton.className = "btn btn-secondary";
+    prevButton.className = "btn btn-outline-secondary btn-sm";
     prevButton.innerText = "Previous";
     prevButton.onclick = () => loadFullReport(currentPage - 1, filter);
     reportPagination.appendChild(prevButton);
   }
 
   const pageInfo = document.createElement("span");
-  pageInfo.className = "mx-2";
+  pageInfo.className = "mx-3 align-self-center";
   pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
   reportPagination.appendChild(pageInfo);
 
   if (currentPage < totalPages) {
     const nextButton = document.createElement("button");
-    nextButton.className = "btn btn-secondary";
+    nextButton.className = "btn btn-outline-secondary btn-sm";
     nextButton.innerText = "Next";
     nextButton.onclick = () => loadFullReport(currentPage + 1, filter);
     reportPagination.appendChild(nextButton);
   }
 }
-
-
 
 async function showReport(event) {
   event.preventDefault();
@@ -208,7 +177,6 @@ async function deleteReport(id, currentPage, filter) {
       confirmButtonColor: '#198754',
       cancelButtonColor: '#dc3545',
       confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
     });
 
     if (result.isConfirmed) {
@@ -222,27 +190,19 @@ async function deleteReport(id, currentPage, filter) {
         text: 'Expense has been deleted.',
         showConfirmButton: false,
         timer: 1500,
-        timerProgressBar: true
       });
-      // Fetching updated report data to check how many items are left
-      const limit = parseInt(localStorage.getItem("expensesLimit")) || 5;
-      const all = filter === "all" ? "all" : "custom";
-
-        const response = await axios.get(`${baseUrl}/userexpense/expenses/paginated?page=${currentPage}&row=${limit}&filter=${all}`, {
+      let limit = parseInt(localStorage.getItem("expensesLimit")) || 10;
+        const response = await axios.get(`${baseUrl}/userexpense/expenses/paginated?page=${currentPage}&row=${limit}&filter=${filter}`, {
         headers: { Authorization: localStorage.getItem("token") },
       });
-
       const items = response.data.expenses || [];
       const totalCount = response.data.totalCount || 0;
       const totalPages = Math.ceil(totalCount / limit);
-
-      //If current page is now empty, and not the first page, go to previous
       if (items.length === 0 && currentPage > 1) {
-        loadFullReport(currentPage - 1, all);
+          loadFullReport(currentPage - 1, filter);
       } else {
-        loadFullReport(currentPage, all);
+          loadFullReport(currentPage, filter);
       }
-    
     }
   } catch (err) {
     console.error("Error deleting expense:", err);
@@ -251,12 +211,9 @@ async function deleteReport(id, currentPage, filter) {
       title: 'Error',
       text: 'Failed to delete expense. Please try again.',
       confirmButtonColor: '#dc3545',
-      timer: 3000,
-      timerProgressBar: true
     });
   }
 }
-
 
 async function download() {
   try {
@@ -265,36 +222,35 @@ async function download() {
       headers: { Authorization: token }
     });
 
-    if (response.status === 200 && response.data.expenses) {
+    if (response.status === 200 && response.data.expenses && response.data.expenses.length > 0) {
       const csvData = response.data.expenses.map((item) => {
         const date = new Date(item.createdAt).toLocaleDateString("en-GB");
-        return `${item.amount},${item.description},${item.category},${date}`;
+        return `"${item.amount}","${item.description}","${item.category}","${date}"`;
       });
 
       const csvHeader = "Amount,Description,Category,Date\n";
-      const blob = new Blob([csvHeader + csvData.join("\n")], { type: "text/csv" });
+      const blob = new Blob([csvHeader + csvData.join("\n")], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = url;
       a.download = "expenses.csv";
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       await Swal.fire({
         icon: 'success',
         title: 'Download Started',
         text: 'Your expense report is being downloaded.',
-        confirmButtonColor: '#198754',
         timer: 2000,
-        timerProgressBar: true
       });
     } else {
       await Swal.fire({
         icon: 'info',
         title: 'No Expenses',
         text: 'No expenses found to download.',
-        confirmButtonColor: '#0dcaf0'
       });
     }
   } catch (err) {
@@ -303,55 +259,9 @@ async function download() {
       icon: 'error',
       title: 'Download Failed',
       text: 'Failed to download expenses. Please try again.',
-      confirmButtonColor: '#dc3545'
     });
   }
 }
-
-
-
-
-// async function loadDownloadHistory() {
-//   try {
-//     const response = await axios.get(
-//       `${baseUrl}/userexpense/expenses/download-history`,
-//       { headers: { Authorization: localStorage.getItem("token") } }
-//     );
-//     const historyContainer = document.getElementById("download-history");
-//     historyContainer.innerHTML = "";
-//     response.data.forEach((item, index) => {
-//       const row = document.createElement("tr");
-//       row.innerHTML = `
-//         <td>${index + 1}</td>
-//         <td>${new Date(item.createdAt).toLocaleString()}</td>
-//         <td><a href="${item.fileUrl}" target="_blank" class="btn btn-primary">Download</a></td>
-//       `;
-//       historyContainer.appendChild(row);
-//     });
-//   } catch (error) {
-//     console.error("Error fetching download history:", error);
-//   }
-// }
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    await Swal.fire({
-      icon: 'warning',
-      title: 'Session Expired',
-      text: "For your security, you've been signed out. You can log in again anytime.",
-      confirmButtonColor: '#ffc107',
-      confirmButtonText: 'Go to Login',
-      allowOutsideClick: false
-    }).then(() => {
-      window.location.href = `${baseUrl}/user/login`;
-    });
-    return;
-  }
-  document
-    .getElementById("timeFilter")
-    .addEventListener("change", filterReportChanged);
-  document });
 
 function confirmLogout() {
   Swal.fire({
@@ -369,9 +279,82 @@ function confirmLogout() {
     }
   });
 }
+
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle('dark-mode');
   body.classList.toggle('light-mode');
+  const isDarkMode = body.classList.contains('dark-mode');
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
+async function updateUserStatus() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const response = await axios.get(`${baseUrl}/user/user/status`, {
+            headers: { Authorization: token },
+        });
+
+        const { name, isPremium } = response.data;
+        const greetingEl = document.getElementById('user-greeting');
+        const actionsEl = document.getElementById('premium-actions');
+
+        // Clear previous content to prevent duplicate buttons
+        greetingEl.innerHTML = '';
+        actionsEl.innerHTML = '';
+
+        greetingEl.innerHTML = `Welcome, <strong>${name}</strong>`;
+
+        if (isPremium) {
+            greetingEl.innerHTML += `<span class="badge bg-warning text-dark ms-2">Premium</span>`;
+            
+            const themeButton = document.createElement('button');
+            themeButton.className = 'btn btn-sm btn-outline-secondary';
+            themeButton.innerHTML = '<i class="fas fa-moon"></i> Theme';
+            themeButton.onclick = toggleTheme;
+            actionsEl.appendChild(themeButton);
+
+            document.getElementById('leaderboard-button').style.display = 'block';
+            document.getElementById('download-expense').style.display = 'block';
+        } else {
+            const upgradeButton = document.createElement('button');
+            upgradeButton.className = 'btn btn-sm btn-primary';
+            upgradeButton.id = 'rzp-button';
+            upgradeButton.innerHTML = '<i class="fas fa-arrow-up me-1"></i> Upgrade';
+            actionsEl.appendChild(upgradeButton);
+            
+            // Attach the listener now that the button exists
+            attachPurchaseListener();
+        }
+    } catch (error) {
+        console.error("Failed to fetch user status", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Session Expired',
+      text: "For your security, you've been signed out. You can log in again anytime.",
+      confirmButtonColor: '#ffc107',
+      confirmButtonText: 'Go to Login',
+      allowOutsideClick: false
+    }).then(() => {
+      window.location.href = `${baseUrl}/user/login`;
+    });
+    return;
+  }
+  
+  // Apply saved theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.body.classList.remove('light-mode');
+  }
+
+  updateUserStatus();
+});
